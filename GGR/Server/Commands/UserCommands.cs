@@ -1,0 +1,243 @@
+﻿using GGR.Server.Data.Models;
+using GGR.Server.Commands.Contracts;
+using Microsoft.EntityFrameworkCore;
+using GGR.Server.Data;
+using GGR.Shared.User;
+using System.Security.Cryptography;
+using GGR.Server.Data.Models.Utils;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
+using System.Text;
+using GGR.Server.Errors;
+
+namespace GGR.Server.Commands;
+
+public class UserCommands : IUserCommands
+{
+    private readonly IDbContextFactory<GlobalDbContext> _dbContextFactory;
+    private readonly ILogger<UserCommands> _logger;
+    private readonly IConfiguration _configuration;
+
+    public UserCommands(
+        IDbContextFactory<GlobalDbContext> dbContextFactory,
+        ILogger<UserCommands> logger,
+        IConfiguration configuration)
+    {
+        _logger = logger;
+        _dbContextFactory = dbContextFactory;
+        _configuration = configuration;
+    }
+
+    public async Task<User> CreateUser(UserRegisterRequest request)
+    {
+        using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+
+        if ( dbContext.Users.Any(user => user.Email == request.Email) )
+            throw new Exception(UserError.EmailAlreadyRegistered.ToString());
+
+        CreatePasswordHash(
+            request.Password,
+            out byte[] passwordHash,
+            out byte[] passwordSalt);
+
+        var userRol = request.UserRol switch
+        {
+            "admin" => UserRole.Admin,
+            "editor" => UserRole.Editor,
+            "client" => UserRole.Client,
+            _ => throw new Exception(UserError.UnspecifieRole.ToString())
+        };
+
+        var userId = Guid.NewGuid();
+        var user = new User()
+        {
+            Id = userId,
+            Name = request.Name,
+            LastName = request.LastName,
+            Email = request.Email,
+            Phone = request.Phone,
+            Rol = userRol,
+            PasswordHash = passwordHash,
+            PasswordSalt = passwordSalt,
+            Points = 0
+        };
+
+        var registration = new Registration()
+        {
+            Id = Guid.NewGuid(),
+            User = user,
+            VerificationToken = CreateRandomToken(),
+            RegistrationDate = DateTime.UtcNow,
+            ExpiryTime = DateTime.UtcNow.AddMinutes(60),
+        };
+
+        try
+        {
+            dbContext.Users.Add(user);
+            dbContext.Registrations.Add(registration);
+        }
+        catch ( Exception ex )
+        {
+            _logger.LogError("Something went wrong while saving user: {ErrorMessage}", ex.Message);
+            throw new Exception(UserError.SavingDataError.ToString());
+        }
+
+        await dbContext.SaveChangesAsync();
+
+        return user;
+    }
+
+    public async Task<(User, string)> LoginUser(UserLoginRequest request)
+    {
+        using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var user = dbContext.Users.FirstOrDefault(u => u.Email == request.Email);
+        var userRegistration = dbContext.Registrations.FirstOrDefault(r => r.User == user);
+
+        if ( user == null )
+            throw new Exception(UserError.UserNotFound.ToString());
+
+        if ( userRegistration == null || userRegistration.VerifiedAt == null )
+            throw new Exception(UserError.UserNotVerified.ToString());
+
+        if ( !VerifyPasswordHash(request.Password, user.PasswordHash, user.PasswordSalt) )
+            throw new Exception(UserError.IncorrectPassword.ToString());
+
+
+        var token = CreateJWT(user);
+
+        return (user, token);
+    }
+
+    public async Task VerifyUser(string token)
+    {
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var registration = dbContext.Registrations.Include(r => r.User).FirstOrDefault(r => r.VerificationToken == token);
+
+        if ( registration == null )
+            throw new Exception(UserError.RegistrationNotFound.ToString());
+
+        if ( registration.ExpiryTime < DateTime.UtcNow )
+            throw new Exception(UserError.RegistrationExpired.ToString());
+
+        if ( registration.User == null )
+            throw new Exception(UserError.UserNotFound.ToString());
+
+        registration.VerifiedAt = DateTime.UtcNow;
+
+        // TODO: check admin password request
+
+        try
+        {
+            await dbContext.SaveChangesAsync();
+        }
+        catch ( Exception ex )
+        {
+            _logger.LogError("Error saving registration data: {ErrorMessage} for user {UserId}", ex.Message, registration.User.Id);
+            throw new Exception(UserError.SavingDataError.ToString());
+        }
+    }
+
+    public async Task ForgotUserPassword(string email)
+    {
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
+
+        if ( user == null )
+            throw new Exception(UserError.UserNotFound.ToString());
+
+        var registration = await dbContext.Registrations.FirstOrDefaultAsync(r => r.User == user);
+
+        if ( registration == null )
+            throw new Exception(UserError.RegistrationNotFound.ToString());
+
+        registration.PasswordResetToken = CreateRandomToken();
+        registration.ResetTokenExpires = DateTime.UtcNow.AddMinutes(45);
+
+        // TODO: Send email with link to restore password
+
+        try
+        {
+            await dbContext.SaveChangesAsync();
+        }
+        catch ( Exception ex )
+        {
+            _logger.LogError("Error saving restore password data: {ErrorMessage} for user {UserId}", ex.Message, user.Id);
+            throw new Exception(UserError.SavingDataError.ToString());
+        }
+    }
+
+    public async Task RestoreUserPassword(ResetPasswordRequest request)
+    {
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var registration = await dbContext.Registrations.Include(r => r.User).FirstOrDefaultAsync(r => r.PasswordResetToken == request.ResetToken);
+
+        if ( registration == null )
+            throw new Exception(UserError.RegistrationNotFound.ToString());
+
+        if ( registration.ResetTokenExpires < DateTime.UtcNow )
+            throw new Exception(UserError.RegistrationExpired.ToString());
+
+        CreatePasswordHash(
+            request.NewPassword,
+            out byte[] passwordHash,
+            out byte[] passwordSalt);
+
+        registration.User.PasswordHash = passwordHash;
+        registration.User.PasswordSalt = passwordSalt;
+
+        try
+        {
+            await dbContext.SaveChangesAsync();
+        }
+        catch ( Exception ex )
+        {
+            _logger.LogError("Something went wrong while saving user: {ErrorMessage}", ex.Message);
+            throw new Exception(UserError.SavingDataError.ToString());
+        }
+    }
+
+    private static void CreatePasswordHash(
+        string password,
+        out byte[] passwordHash,
+        out byte[] passwordSalt)
+    {
+        using var hmac = new HMACSHA512();
+        passwordSalt = hmac.Key;
+        passwordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
+    }
+
+    private static bool VerifyPasswordHash(
+        string password,
+        byte[] passwordHash,
+        byte[] passwordSalt)
+    {
+        using var hmac = new HMACSHA512(passwordSalt);
+        var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
+        return computedHash.SequenceEqual(passwordHash);
+    }
+
+    private string CreateJWT(User user)
+    {
+        var claims = new List<Claim>()
+        {
+            new Claim(ClaimTypes.Name, user.Name),
+            new Claim(ClaimTypes.Role, user.Rol.ToString())
+        };
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("Jwt").GetSection("Key").Value!));
+        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+
+        var token = new JwtSecurityToken(
+            claims: claims,
+            expires: DateTime.UtcNow.AddMinutes(user.Rol == UserRole.Admin ? 60 : 30),
+            signingCredentials: credentials);
+
+        var jwt = new JwtSecurityTokenHandler().WriteToken(token);
+        return jwt;
+    }
+
+    private static string CreateRandomToken()
+    {
+        return Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
+    }
+}

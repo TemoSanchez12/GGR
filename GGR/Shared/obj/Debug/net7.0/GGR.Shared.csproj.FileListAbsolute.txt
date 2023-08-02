@@ -1,0 +1,12 @@
+D:\Repos\GGR\GGR\Shared\bin\Debug\net7.0\GGR.Shared.deps.json
+D:\Repos\GGR\GGR\Shared\bin\Debug\net7.0\GGR.Shared.dll
+D:\Repos\GGR\GGR\Shared\bin\Debug\net7.0\GGR.Shared.pdb
+D:\Repos\GGR\GGR\Shared\obj\Debug\net7.0\GGR.Shared.csproj.AssemblyReference.cache
+D:\Repos\GGR\GGR\Shared\obj\Debug\net7.0\GGR.Shared.GeneratedMSBuildEditorConfig.editorconfig
+D:\Repos\GGR\GGR\Shared\obj\Debug\net7.0\GGR.Shared.AssemblyInfoInputs.cache
+D:\Repos\GGR\GGR\Shared\obj\Debug\net7.0\GGR.Shared.AssemblyInfo.cs
+D:\Repos\GGR\GGR\Shared\obj\Debug\net7.0\GGR.Shared.csproj.CoreCompileInputs.cache
+D:\Repos\GGR\GGR\Shared\obj\Debug\net7.0\GGR.Shared.dll
+D:\Repos\GGR\GGR\Shared\obj\Debug\net7.0\refint\GGR.Shared.dll
+D:\Repos\GGR\GGR\Shared\obj\Debug\net7.0\GGR.Shared.pdb
+D:\Repos\GGR\GGR\Shared\obj\Debug\net7.0\ref\GGR.Shared.dll

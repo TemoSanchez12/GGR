@@ -1,0 +1,42 @@
+﻿<AuthorizeView>
+
+    <Authorized>
+        <button @onclick="Logout" class="btn btn-danger">Cerrar sesión</button>
+    </Authorized>
+
+    <NotAuthorized>
+        <button @onclick="Login" class="btn btn-primary">Iniciar sesión</button>
+    </NotAuthorized>
+
+</AuthorizeView>
+
+
+@code {
+    [Inject] NavigationManager NavigationManager { get; set; } = null!;
+    [Inject] ILocalStorageService LocalStorageService { get; set; } = null!;
+    [Inject] AuthenticationStateProvider AuthStateProvider { get; set; } = null!;
+    [Inject] SweetAlertService Sweet { get; set; } = null!;
+
+    private void Login()
+    {
+        NavigationManager.NavigateTo("login-admin");
+    }
+
+    private async Task Logout()
+    {
+        var result = await Sweet.FireAsync(new SweetAlertOptions
+            {
+                Title = "¿Esta seguro de que desea cerrar sesión?",
+                Icon = SweetAlertIcon.Warning,
+                ShowCancelButton = true,
+                ConfirmButtonText = "Cerrar sesión",
+                CancelButtonText = "No, permanecer en la pagina"
+            });
+
+        if ( result.IsConfirmed )
+        {
+            await LocalStorageService.RemoveItemAsync("token");
+            await AuthStateProvider.GetAuthenticationStateAsync();
+        }
+    }
+}

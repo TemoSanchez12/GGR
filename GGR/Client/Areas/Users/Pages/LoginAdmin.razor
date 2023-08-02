@@ -1,0 +1,79 @@
+﻿@page "/login-admin"
+@layout LoginLayoutAdmin
+@using GGR.Client.Areas.Users.Services.Contract;
+@using GGR.Shared.User;
+
+
+<h3 class="mb-5">Iniciar Sesión</h3>
+
+<EditForm Model="loginRequest" OnValidSubmit="HandleValidSubmit" class="col-6 p-3 rounded-1 border border-secondary-subtle ">
+    <div class="mb-3">
+        <label for="email" class="form-label">Correo Electronico</label>
+        <InputText @bind-Value="loginRequest.Email" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label for="password" class="form-label">Contraseña</label>
+        <InputText @bind-Value="loginRequest.Password" type="password" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-success">Iniciar Sesión</button>
+</EditForm>
+
+@code {
+    [Inject] private IUserClientService _userClientService { get; set; } = null!;
+    [Inject] private SweetAlertService Sweet { get; set; } = null!;
+    [Inject] private ILogger<LoginAdmin> Logger { get; set; } = null!;
+    [Inject] private NavigationManager NavigationManager { get; set; } = null!;
+
+    private UserLoginRequest loginRequest = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await _userClientService.UserLogout();
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            Logger.LogInformation("Sending login request for user {UserEmail}", loginRequest.Email);
+            var response = await _userClientService.UserLogin(loginRequest);
+            var toast = Sweet.Mixin(new SweetAlertOptions
+                {
+                    Toast = true,
+                    TimerProgressBar = true,
+                    Position = "top-end",
+                    ShowConfirmButton = false,
+                    Timer = 3000,
+                });
+
+            if ( response.Success )
+            {
+                NavigationManager.NavigateTo("/");
+                await toast.FireAsync(new SweetAlertOptions
+                    {
+                        Icon = "success",
+                        Title = response.Message
+                    });
+            }
+            else
+                await toast.FireAsync(new SweetAlertOptions
+                    {
+                        Icon = "error",
+                        Title = response.Message
+                    });
+        }
+        catch ( Exception ex )
+        {
+            Logger.LogError("Something went wrong while sending login request: {ErrorMessage}", ex.Message);
+            await Sweet.FireAsync(new SweetAlertOptions
+                {
+                    Icon = "error",
+                    Text = "Algo ha salido mal, por favor intentelo de nuevo"
+                });
+        }
+
+
+    }
+}
