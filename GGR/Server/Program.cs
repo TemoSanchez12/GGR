@@ -32,9 +32,10 @@ builder.Services.AddAuthentication("Bearer").AddJwtBearer(options =>
     options.RequireHttpsMetadata = false;
     options.TokenValidationParameters = new TokenValidationParameters()
     {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = signingKey,
         ValidateAudience = false,
         ValidateIssuer = false,
-        IssuerSigningKey = signingKey,
     };
 });
 
@@ -57,12 +58,19 @@ else
     app.UseHsts();
 }
 
+app.UseAuthentication();
+app.UseRouting();
+app.UseAuthorization();
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllers();
+});
+
 app.UseHttpsRedirection();
 
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
 
-app.UseRouting();
 
 
 app.MapRazorPages();

@@ -2,7 +2,6 @@ global using Microsoft.AspNetCore.Components.Authorization;
 global using Blazored.LocalStorage;
 global using CurrieTechnologies.Razor.SweetAlert2;
 using GGR.Client;
-using GGR.Client.Areas.Users;
 using GGR.Client.Auth;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -15,7 +14,8 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 
 
 // DependencyInjection
-DependencyInjection.Configure(builder.Services, builder.Configuration);
+GGR.Client.Areas.Users.DependencyInjection.Configure(builder.Services, builder.Configuration);
+GGR.Client.Areas.Rewards.DependencyInjection.Configure(builder.Services, builder.Configuration);
 
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
 builder.Services.AddAuthorizationCore();

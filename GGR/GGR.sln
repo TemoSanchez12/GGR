@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.002.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GGR.Client", "Client\GGR.Client.csproj", "{61723354-2EBF-43DC-80F4-CF00DFEC640B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GGR.Server", "Server\GGR.Server.csproj", "{DAAD8846-20AC-4138-B865-11AB214F5B50}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GGR.Shared", "Shared\GGR.Shared.csproj", "{28F7FC61-FA4B-4288-B753-EDB235FDA826}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{61723354-2EBF-43DC-80F4-CF00DFEC640B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{61723354-2EBF-43DC-80F4-CF00DFEC640B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{61723354-2EBF-43DC-80F4-CF00DFEC640B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{61723354-2EBF-43DC-80F4-CF00DFEC640B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DAAD8846-20AC-4138-B865-11AB214F5B50}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DAAD8846-20AC-4138-B865-11AB214F5B50}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DAAD8846-20AC-4138-B865-11AB214F5B50}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DAAD8846-20AC-4138-B865-11AB214F5B50}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28F7FC61-FA4B-4288-B753-EDB235FDA826}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28F7FC61-FA4B-4288-B753-EDB235FDA826}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28F7FC61-FA4B-4288-B753-EDB235FDA826}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28F7FC61-FA4B-4288-B753-EDB235FDA826}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A2BF6DAD-760D-4A31-8144-6F9B8CB48496}
+	EndGlobalSection
+EndGlobal

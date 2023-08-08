@@ -9,5 +9,7 @@ public static class DependencyInjection
     {
         // Commands
         services.AddSingleton<IUserCommands, UserCommands>();
+        services.AddSingleton<IRewardCommands, RewardCommands>();
+        services.AddSingleton<IRewardClaimCommands, RewardClaimCommands>();
     }
 }

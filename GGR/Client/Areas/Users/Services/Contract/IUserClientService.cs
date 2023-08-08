@@ -5,6 +5,6 @@ namespace GGR.Client.Areas.Users.Services.Contract;
 
 public interface IUserClientService
 {
-    public Task<ServiceResponse<UserLoginResponse>> UserLogin(UserLoginRequest request);
-    public Task UserLogout();
+    Task<ServiceResponse<UserLoginResponse>> UserLogin(UserLoginRequest request);
+    Task UserLogout();
 }

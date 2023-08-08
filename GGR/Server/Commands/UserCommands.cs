@@ -31,7 +31,7 @@ public class UserCommands : IUserCommands
 
     public async Task<User> CreateUser(UserRegisterRequest request)
     {
-        using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
 
         if ( dbContext.Users.Any(user => user.Email == request.Email) )
             throw new Exception(UserError.EmailAlreadyRegistered.ToString());
@@ -76,6 +76,7 @@ public class UserCommands : IUserCommands
         {
             dbContext.Users.Add(user);
             dbContext.Registrations.Add(registration);
+            await dbContext.SaveChangesAsync();
         }
         catch ( Exception ex )
         {
@@ -83,16 +84,15 @@ public class UserCommands : IUserCommands
             throw new Exception(UserError.SavingDataError.ToString());
         }
 
-        await dbContext.SaveChangesAsync();
 
         return user;
     }
 
     public async Task<(User, string)> LoginUser(UserLoginRequest request)
     {
-        using var dbContext = await _dbContextFactory.CreateDbContextAsync();
-        var user = dbContext.Users.FirstOrDefault(u => u.Email == request.Email);
-        var userRegistration = dbContext.Registrations.FirstOrDefault(r => r.User == user);
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+        var userRegistration = await dbContext.Registrations.FirstOrDefaultAsync(r => r.User == user);
 
         if ( user == null )
             throw new Exception(UserError.UserNotFound.ToString());
@@ -222,7 +222,8 @@ public class UserCommands : IUserCommands
         var claims = new List<Claim>()
         {
             new Claim(ClaimTypes.Name, user.Name),
-            new Claim(ClaimTypes.Role, user.Rol.ToString())
+            new Claim(ClaimTypes.Role, user.Rol.ToString()),
+            new Claim(ClaimTypes.Email, user.Email),
         };
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("Jwt").GetSection("Key").Value!));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);

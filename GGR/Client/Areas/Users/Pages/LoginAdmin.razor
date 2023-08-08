@@ -2,11 +2,12 @@
 @layout LoginLayoutAdmin
 @using GGR.Client.Areas.Users.Services.Contract;
 @using GGR.Shared.User;
+@using GGR.Client;
 
 
-<h3 class="mb-5">Iniciar Sesión</h3>
+<h3 class="mb-5 mx-auto mt-4 text-center">Iniciar Sesión</h3>
 
-<EditForm Model="loginRequest" OnValidSubmit="HandleValidSubmit" class="col-6 p-3 rounded-1 border border-secondary-subtle ">
+<EditForm Model="loginRequest" OnValidSubmit="HandleValidSubmit" class="col-6 p-3 rounded-1 border border-secondary-subtle mx-auto">
     <div class="mb-3">
         <label for="email" class="form-label">Correo Electronico</label>
         <InputText @bind-Value="loginRequest.Email" class="form-control" />
@@ -21,16 +22,16 @@
 </EditForm>
 
 @code {
-    [Inject] private IUserClientService _userClientService { get; set; } = null!;
+    private UserLoginRequest loginRequest = new();
+
+    [Inject] private IUserClientService UserClientService { get; set; } = null!;
     [Inject] private SweetAlertService Sweet { get; set; } = null!;
     [Inject] private ILogger<LoginAdmin> Logger { get; set; } = null!;
     [Inject] private NavigationManager NavigationManager { get; set; } = null!;
 
-    private UserLoginRequest loginRequest = new();
-
     protected override async Task OnInitializedAsync()
     {
-        await _userClientService.UserLogout();
+        await UserClientService.UserLogout();
     }
 
     private async Task HandleValidSubmit()
@@ -38,7 +39,7 @@
         try
         {
             Logger.LogInformation("Sending login request for user {UserEmail}", loginRequest.Email);
-            var response = await _userClientService.UserLogin(loginRequest);
+            var response = await UserClientService.UserLogin(loginRequest);
             var toast = Sweet.Mixin(new SweetAlertOptions
                 {
                     Toast = true,
@@ -50,7 +51,7 @@
 
             if ( response.Success )
             {
-                NavigationManager.NavigateTo("/");
+                NavigationManager.NavigateTo(Routes.Home);
                 await toast.FireAsync(new SweetAlertOptions
                     {
                         Icon = "success",

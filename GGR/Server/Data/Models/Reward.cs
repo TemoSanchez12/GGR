@@ -1,4 +1,5 @@
 ﻿using GGR.Server.Data.Models.Utils;
+using GGR.Shared.Reward.Definitions;
 
 namespace GGR.Server.Data.Models;
 
@@ -11,4 +12,23 @@ public class Reward
     public string PhotoUrl { get; set; } = string.Empty;
     public int UnitsAvailable { get; set; }
     public RewardStatus Status { get; set; }
+
+    public RewardDefinition ToDefinition()
+    {
+        return new RewardDefinition
+        {
+            Id = Id,
+            Name = Name,
+            Description = Description,
+            PricePoints = PricePoints,
+            PhotoUrl = PhotoUrl,
+            UnitsAvailable = UnitsAvailable,
+            Status = Status switch
+            {
+                RewardStatus.Available => RewardStatusDefinition.Available,
+                RewardStatus.NotAvailable => RewardStatusDefinition.NotAvailable,
+                _ => RewardStatusDefinition.NotAvailable,
+            }
+        };
+    }
 }

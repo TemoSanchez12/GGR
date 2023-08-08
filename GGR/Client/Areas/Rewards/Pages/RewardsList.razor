@@ -1,0 +1,143 @@
+﻿@page "/rewards"
+@layout MainLayout
+@using GGR.Client.Areas.Rewards.Services.Contracts;
+@using GGR.Client.Areas.Rewards.Models;
+@using GGR.Client.Areas.Rewards.Utils;
+@attribute [Authorize(Roles = "Editor, Admin")]
+
+<AuthorizeView Roles="Admin">
+    <Authorized>
+        <a class="btn btn-success btn-sm mb-3" href="@Routes.Reward.CreateReward">Nueva recompenza</a>
+    </Authorized>
+</AuthorizeView>
+
+@if ( Rewards.Any() )
+{
+    <table class="table table-bordered">
+        <thead class="thead-dark">
+            <tr>
+                <th scope="col">Id</th>
+                <th scope="col">Nombre</th>
+                <th scope="col">Puntos requeridos</th>
+                <th scope="col">Unidades disponibles</th>
+                <th scope="col">Status</th>
+                <AuthorizeView Roles="Admin">
+                    <Authorized>
+                        <th scope="col">Acciones</th>
+                    </Authorized>
+                </AuthorizeView>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            @foreach ( var reward in Rewards )
+            {
+                <tr>
+                    <td scope="row">@reward.Id</td>
+                    <td>@reward.Name</td>
+                    <td>@reward.PricePoints</td>
+                    <td>@reward.UnitsAvailable</td>
+                    <td>@reward.Status</td>
+                    <AuthorizeView Roles="Admin">
+                        <Authorized>
+                            <td>
+                                <a class="btn btn-primary btn-sm" href="@($"{Routes.Reward.EditReward}/{reward.Id.ToString()}")">
+                                    <i class="oi oi-pencil"></i>
+                                </a>
+
+                                <button class="btn btn-danger btn-sm" onclick="@(async() => await DeleteReward(reward.Id))">
+                                    <i class="oi oi-trash"></i>
+                                </button>
+                            </td>
+                        </Authorized>
+                    </AuthorizeView>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No hay recompenzas</p>
+}
+
+@code {
+    private List<Reward> Rewards = new List<Reward>();
+
+    [Inject] private IRewardClientService RewardClientService { get; set; } = null!;
+    [Inject] private SweetAlertService Sweet { get; set; } = null!;
+    [Inject] private ILogger<RewardsList> Logger { get; set; } = null!;
+    [Inject] private NavigationManager NavigationManager { get; set; } = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadRewards();
+    }
+
+    private async Task DeleteReward(Guid rewardId)
+    {
+        var result = await Sweet.FireAsync(new SweetAlertOptions
+            {
+                Title = "¿Esta seguro de que desea elimiar la recompenza?",
+                Icon = SweetAlertIcon.Warning,
+                ShowCancelButton = true,
+                ConfirmButtonText = "Si, eliminar",
+                CancelButtonText = "No, conservar"
+            });
+
+        if ( result.IsConfirmed )
+        {
+            try
+            {
+                await RewardClientService.DeleteReward(new GGR.Shared.Reward.DeleteRewardRequest { RewardId = rewardId.ToString() });
+                await LoadRewards();
+                await Sweet.FireAsync(new SweetAlertOptions
+                    {
+                        Title = "Eliminado",
+                        Icon = SweetAlertIcon.Success,
+                        Text = "Recompenza eliminada correctamente"
+                    });
+
+            }
+            catch ( Exception ex )
+            {
+                Logger.LogError(ex, "Error al eliminar la recompenza");
+                await Sweet.FireAsync(new SweetAlertOptions
+                    {
+                        Title = "Error",
+                        Icon = SweetAlertIcon.Error,
+                        Text = "Error al eliminar la recompenza"
+                    });
+            }
+        }
+    }
+
+    private async Task LoadRewards()
+    {
+        var response = await RewardClientService.GetAllRewards();
+
+        if ( response.Data == null )
+        {
+            var toast = Sweet.Mixin(new SweetAlertOptions
+                {
+                    Toast = true,
+                    TimerProgressBar = true,
+                    Position = "top-end",
+                    ShowConfirmButton = false,
+                    Timer = 3000,
+                });
+
+            await toast.FireAsync(new SweetAlertOptions
+                {
+                    Icon = "danger",
+                    Title = response.Message
+                });
+        }
+        else
+        {
+            Rewards = response.Data.Rewards.Select(reward => RewardMapper.MapToEntity(reward)).ToList();
+        }
+    }
+
+}

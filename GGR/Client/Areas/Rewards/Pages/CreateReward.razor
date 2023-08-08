@@ -1,0 +1,102 @@
+﻿@page "/rewards/create"
+@layout MainLayout
+@attribute [Authorize(Roles = "Admin")]
+@using GGR.Client.Areas.Rewards.Services.Contracts;
+@using GGR.Shared.Reward;
+
+<h3>Crear nueva recompensa</h3>
+
+<EditForm Model="@reward" OnValidSubmit="@OnValidSubmitHandler" class="border border-light container-sm p-5 rounded">
+    <DataAnnotationsValidator />
+
+    <div class="form-group mb-3">
+        <label class="form-label">Nombre</label>
+        <InputText class="form-control" @bind-Value="reward.Name" />
+        <ValidationMessage For="@(()=> reward.Name)" />
+    </div>
+
+    <div class="form-group mb-3">
+        <label class="form-label">Descripción</label>
+        <InputTextArea class="form-control" @bind-Value="reward.Description" />
+        <ValidationMessage For="@(()=> reward.Name)" />
+    </div>
+
+    <div class="form-group mb-3">
+        <label class="form-label">Puntos requeridos</label>
+        <InputNumber class="form-control" @bind-Value="reward.PricePoints" />
+        <ValidationMessage For="@(()=> reward.PricePoints)" />
+    </div>
+
+    <div class="form-group mb-3">
+        <label class="form-label">Unidades disponibles</label>
+        <InputNumber class="form-control" @bind-Value="reward.UnitsAvailable" />
+        <ValidationMessage For="@(()=> reward.UnitsAvailable)" />
+    </div>
+
+    <div class="form-group mb-3">
+        <label class="form-label">Esta activa</label>
+        <InputSelect class="form-control" @bind-Value="reward.IsActive">
+            <option value="True">Si</option>
+            <option value="False">No</option>
+        </InputSelect>
+        <ValidationMessage For="@(()=> reward.IsActive)" />
+    </div>
+
+    <div class="">
+        <button type="submit" class="btn btn-success btn-lg">Crear</button>
+    </div>
+</EditForm>
+
+@code {
+    private CreateRewardRequest reward = new CreateRewardRequest();
+
+    [Inject] private IRewardClientService RewardClientService { get; set; } = null!;
+    [Inject] private SweetAlertService Sweet { get; set; } = null!;
+    [Inject] private ILogger<CreateReward> Logger { get; set; } = null!;
+    [Inject] private NavigationManager NavigationManager { get; set; } = null!;
+
+    private async void OnValidSubmitHandler()
+    {
+        try
+        {
+            Logger.LogInformation("Sending request to create reward {RewardName}", reward.Name);
+            var response = await RewardClientService.CreateReward(reward);
+
+            var toast = Sweet.Mixin(new SweetAlertOptions
+                {
+                    Toast = true,
+                    TimerProgressBar = true,
+                    Position = "top-end",
+                    ShowConfirmButton = false,
+                    Timer = 3000,
+                });
+
+            if ( response.Success )
+            {
+                NavigationManager.NavigateTo(Routes.Reward.RewardsList);
+                await toast.FireAsync(new SweetAlertOptions
+                    {
+                        Icon = "success",
+                        Title = response.Message
+                    });
+            }
+            else
+            {
+                await toast.FireAsync(new SweetAlertOptions
+                    {
+                        Icon = "error",
+                        Title = response.Message
+                    });
+            }
+        }
+        catch ( Exception ex )
+        {
+            Logger.LogError("Something went wrong while trying to create reward {ErrorMessage}", ex.Message);
+            await Sweet.FireAsync(new SweetAlertOptions
+                {
+                    Icon = "error",
+                    Text = "Algo ha salido mal, por favor intentelo de nuevo"
+                });
+        }
+    }
+}
