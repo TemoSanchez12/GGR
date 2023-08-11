@@ -26,9 +26,4 @@
     <ProjectReference Include="..\Shared\GGR.Shared.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Areas\Rewards\Components\" />
-    <Folder Include="Areas\Users\Components\" />
-  </ItemGroup>
-
 </Project>

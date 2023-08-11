@@ -9,5 +9,8 @@ public enum UserError
     UserNotVerified,
     IncorrectPassword,
     RegistrationNotFound,
-    RegistrationExpired
+    RegistrationExpired,
+    EmailIsNullWhenSearching,
+    NotUsersFoundByEmail,
+    ErrorSendingVerifycationEmail
 }

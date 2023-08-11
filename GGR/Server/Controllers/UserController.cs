@@ -2,8 +2,8 @@
 using GGR.Server.Errors;
 using GGR.Shared;
 using GGR.Shared.User;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security;
 
 namespace GGR.Server.Controllers;
 
@@ -14,6 +14,7 @@ public class UserController : ControllerBase
     private static string _genericErrorMessage = "Ocurrio un error inesperado";
     private static string _successUserRegisterMessage = "El usuario ha sido registrado correctamento";
     private static string _successUserLoginMessage = "El login de usuario ha sido correcto";
+    private static string _successGetUsersMessage = "Se han devuelto los usuarios con coincidencias";
 
     private readonly ILogger<UserController> _logger;
     private readonly IUserCommands _userCommands;
@@ -22,6 +23,36 @@ public class UserController : ControllerBase
     {
         _logger = logger;
         _userCommands = userCommands;
+    }
+
+    [HttpGet("get-by-email/{email}")]
+    [Authorize(Roles = "Admin, Editor")]
+    public async Task<ActionResult<ServiceResponse<GetUsersResponse>>> GetUserListByEmail(string email)
+    {
+        var response = new ServiceResponse<GetUsersResponse>();
+        try
+        {
+            var users = await _userCommands.GetUsersByEmail(email);
+            response.Success = true;
+            response.Message = _successGetUsersMessage;
+            response.Data = new GetUsersResponse { Users = users.Select(u => u.ToDefinition()).ToList() };
+            return Ok(response);
+        }
+        catch ( Exception ex )
+        {
+            _logger.LogError("Error while fetching user by email: {ErrorMessage}", ex.Message);
+            var error = (UserError) Enum.Parse(typeof(UserError), ex.Message);
+
+            response.Success = false;
+            response.Message = error switch
+            {
+                UserError.NotUsersFoundByEmail => UserErrorMessage.NotUsersFoundByEmail,
+                UserError.EmailIsNullWhenSearching => UserErrorMessage.EmailIsNullWhenSearching,
+                _ => _genericErrorMessage
+            };
+
+            return BadRequest(response);
+        }
     }
 
     [HttpPost("register")]
@@ -47,12 +78,36 @@ public class UserController : ControllerBase
                 UserError.EmailAlreadyRegistered => UserErrorMessage.EmailAlreadyRegistered,
                 UserError.UnspecifieRole => UserErrorMessage.UnspecifieRole,
                 UserError.SavingDataError => UserErrorMessage.SavingUserError,
+                UserError.ErrorSendingVerifycationEmail => UserErrorMessage.ErrorSendingVerifycationEmail,
                 _ => _genericErrorMessage
             };
 
             return BadRequest(response);
         }
 
+    }
+
+    [HttpPost("restore-verify-token")]
+    public async Task<ActionResult> RestoreVerifyToken(UserRestoreVerifyTokenRequest request)
+    {
+        try
+        {
+            await _userCommands.RestoreVerifyToken(request);
+            return Ok();
+        }
+        catch ( Exception ex )
+        {
+            _logger.LogError("Error while verifying user: {ErrorMessage}", ex.Message);
+            var error = (UserError) Enum.Parse(typeof(UserError), ex.Message);
+
+            return error switch
+            {
+                UserError.IncorrectPassword => Unauthorized(UserErrorMessage.IncorrectPassword),
+                UserError.UserNotFound => NotFound(UserErrorMessage.UserNotFound),
+                UserError.RegistrationNotFound => NotFound(UserErrorMessage.RegistrationNotFound),
+                _ => BadRequest()
+            };
+        }
     }
 
     [HttpPost("login")]

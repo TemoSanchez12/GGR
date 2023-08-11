@@ -14,8 +14,8 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 
 
 // DependencyInjection
-GGR.Client.Areas.Users.DependencyInjection.Configure(builder.Services, builder.Configuration);
-GGR.Client.Areas.Rewards.DependencyInjection.Configure(builder.Services, builder.Configuration);
+GGR.Client.Areas.DependencyInjection.Configure(builder.Services, builder.Configuration);
+
 
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
 builder.Services.AddAuthorizationCore();

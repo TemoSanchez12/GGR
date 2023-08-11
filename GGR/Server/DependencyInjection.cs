@@ -8,8 +8,10 @@ public static class DependencyInjection
     public static void Configure(IServiceCollection services, IConfiguration configuration)
     {
         // Commands
-        services.AddSingleton<IUserCommands, UserCommands>();
-        services.AddSingleton<IRewardCommands, RewardCommands>();
-        services.AddSingleton<IRewardClaimCommands, RewardClaimCommands>();
+        services.AddScoped<IUserCommands, UserCommands>();
+        services.AddScoped<IRewardCommands, RewardCommands>();
+        services.AddScoped<IRewardClaimCommands, RewardClaimCommands>();
+        services.AddScoped<ISaleTicketCommands, SaleTicketCommands>();
+        services.AddTransient<IEmailSender, EmailSender>();
     }
 }

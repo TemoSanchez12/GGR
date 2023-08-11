@@ -22,6 +22,25 @@ public class RewardClaimCommands : IRewardClaimCommands
         _logger = logger;
     }
 
+    public async Task<List<RewardClaim>> GetAllRewardClaims()
+    {
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        return dbContext.RewardClaims.Include(r => r.User).Include(r => r.Reward).ToList();
+    }
+
+    public async Task<List<RewardClaim>> GetRewardClaimsByUserEmail(string? email)
+    {
+        _logger.LogInformation("Fetching all reward claims for user {Email}", email);
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+
+        if ( email == null )
+            throw new Exception();
+
+        var rewardClaims = dbContext.RewardClaims.Include(r => r.User)
+            .Include(r => r.Reward).Where(rewardClaim => rewardClaim.User.Email == email);
+
+        return rewardClaims.ToList();
+    }
 
     public async Task<RewardClaim> CreateRewardClaim(CreateRewardClaimRequest request)
     {

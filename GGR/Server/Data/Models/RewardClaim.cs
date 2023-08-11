@@ -21,6 +21,8 @@ public class RewardClaim
             ClaimUpdated = ClaimUpdated,
             RewardId = Reward.Id,
             UserId = User.Id,
+            UserName = User.Name,
+            RewardName = Reward.Name,
             RewardClaimStatus = RewardClaimStatus switch
             {
                 RewardClaimStatus.Unclaimed => RewardClaimStatusDefinition.Unclaimed,

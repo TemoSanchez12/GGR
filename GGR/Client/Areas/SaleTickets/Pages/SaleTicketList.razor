@@ -1,0 +1,104 @@
+﻿@page "/sale-tickets"
+@layout MainLayout
+@attribute [Authorize(Roles = "Admin, Editar")]
+@using GGR.Client.Areas.SaleTickets.Utils;
+@using GGR.Client.Areas.SaleTickets.Models;
+@using GGR.Client.Areas.SaleTickets.Services.Contracts;
+
+
+<EditForm Model="@filter" OnValidSubmit="@HandleSubmitForm" class="border border-light container-sm p-5 rounded">
+    <DataAnnotationsValidator />
+
+    <div class="form-group mb-3">
+        <label class="form-label">Busca tickets registrados por email</label>
+        <InputText class="form-control" @bind-Value="filter.Email" />
+        <ValidationMessage For="@(()=> filter.Email)" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Buscar</button>
+</EditForm>
+
+
+
+@if ( Tickets.Any() )
+{
+    <table class="table table-bordered">
+        <thead class="thead-dark">
+            <tr>
+                <th scope="col">Id</th>
+                <th scope="col">Email de usuario</th>
+                <th scope="col">Cantidad</th>
+                <th scope="col">Puntos asignados</th>
+                <th scope="col">Litros cargados</th>
+                <th scope="col">Acciones</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            @foreach ( var ticket in Tickets )
+            {
+                <tr>
+                    <td scope="row">@ticket.Id</td>
+                    <td>@ticket.UserEmail</td>
+                    <td>@ticket.Amount</td>
+                    <td>@ticket.Points</td>
+                    <td>@ticket.Liters</td>
+                    <td>
+                        <a class="btn btn-primary btn-sm" href="@($"{Routes.Reward.EditReward}/{ticket.Id.ToString()}")">
+                            <i class="oi oi-pencil"></i> Cambiar estado de recompensa
+                        </a>
+                    </td>
+
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p class="text-center mt-5">No se han encontrado tickets para mostrar</p>
+}
+
+
+@code {
+    private SaleTicketEmailFilter filter = new SaleTicketEmailFilter();
+    private List<SaleTicket> Tickets = new List<SaleTicket>();
+
+    [Inject] private ISaleTicketClientService SaleTicketClientService { get; set; } = null!;
+    [Inject] private SweetAlertService Sweet { get; set; } = null!;
+    [Inject] private ILogger<SaleTicketList> Logger { get; set; } = null!;
+    [Inject] private NavigationManager NavigationManager { get; set; } = null!;
+
+    private async Task HandleSubmitForm()
+    {
+        await LoadSaleTickets(filter.Email);
+    }
+
+    private async Task LoadSaleTickets(string email)
+    {
+        var response = await SaleTicketClientService.GetSaleTicketsByUserEmail(email);
+
+        if ( response.Data == null )
+        {
+            var toast = Sweet.Mixin(new SweetAlertOptions
+                {
+                    Toast = true,
+                    TimerProgressBar = true,
+                    Position = "top-end",
+                    ShowConfirmButton = false,
+                    Timer = 3000,
+                });
+
+            await toast.FireAsync(new SweetAlertOptions
+                {
+                    Icon = "danger",
+                    Title = response.Message
+                });
+        }
+        else
+        {
+            Tickets = response.Data.Tickets.Select(saleTicket => SaleTicketMapper.MapToEntity(saleTicket)).ToList();
+        }
+    }
+}

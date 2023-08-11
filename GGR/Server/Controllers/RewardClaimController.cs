@@ -14,6 +14,7 @@ namespace GGR.Server.Controllers;
 public class RewardClaimController : ControllerBase
 {
     private static string _genericErrorMessage = "Algo ha salido mal, intentelo de nuevo";
+    private static string _successGetRewardClaimsMessage = "Se han devuelto las recompensas reclamadas";
     private static string _successCreateRewardClaimMessage = "Se ha creado correctamente el reclamo de recompensa";
     private static string _successUpdateRewardClaimStatusMessage = "Se ha actualizado correctamente el estado del reclamo de recompensa";
 
@@ -24,6 +25,52 @@ public class RewardClaimController : ControllerBase
     {
         _logger = logger;
         _rewardClaimCommands = rewardClaimCommands;
+    }
+
+    [HttpGet("get-all-reward-claims")]
+    [Authorize(Roles = "Admin, Editor")]
+    public async Task<ActionResult<ServiceResponse<GetAllRewardClaimsResponse>>> GetAllRewardClaims()
+    {
+        var response = new ServiceResponse<GetAllRewardClaimsResponse>();
+
+        try
+        {
+            var rewardClaims = await _rewardClaimCommands.GetAllRewardClaims();
+            response.Success = true;
+            response.Message = _successGetRewardClaimsMessage;
+            response.Data = new GetAllRewardClaimsResponse { RewardClaims = rewardClaims.Select(r => r.ToDefinition()).ToList() };
+            return Ok(response);
+        }
+        catch ( Exception ex )
+        {
+            _logger.LogError("Error while creating reward claim: {ErrorMessage}", ex.Message);
+            response.Success = false;
+            response.Message = _genericErrorMessage;
+            return BadRequest(response);
+        }
+    }
+
+    [HttpGet("get-reward-claims-email/{email}")]
+    [Authorize]
+    public async Task<ActionResult<ServiceResponse<GetAllRewardClaimsResponse>>> GetRewardClaimsByEmail(string email)
+    {
+        var response = new ServiceResponse<GetAllRewardClaimsResponse>();
+
+        try
+        {
+            var rewardClaims = await _rewardClaimCommands.GetRewardClaimsByUserEmail(email);
+            response.Success = true;
+            response.Message = _successGetRewardClaimsMessage;
+            response.Data = new GetAllRewardClaimsResponse { RewardClaims = rewardClaims.Select(r => r.ToDefinition()).ToList() };
+            return Ok(response);
+        }
+        catch ( Exception ex )
+        {
+            _logger.LogError("Error while creating reward claim: {ErrorMessage}", ex.Message);
+            response.Success = false;
+            response.Message = _genericErrorMessage;
+            return BadRequest(response);
+        }
     }
 
     [HttpPost("create-reward-claim")]

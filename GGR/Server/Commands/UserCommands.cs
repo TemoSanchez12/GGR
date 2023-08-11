@@ -18,15 +18,34 @@ public class UserCommands : IUserCommands
     private readonly IDbContextFactory<GlobalDbContext> _dbContextFactory;
     private readonly ILogger<UserCommands> _logger;
     private readonly IConfiguration _configuration;
+    private readonly IEmailSender _emailSender;
 
     public UserCommands(
         IDbContextFactory<GlobalDbContext> dbContextFactory,
         ILogger<UserCommands> logger,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IEmailSender emailSender)
     {
         _logger = logger;
         _dbContextFactory = dbContextFactory;
         _configuration = configuration;
+        _emailSender = emailSender;
+    }
+
+    public async Task<List<User>> GetUsersByEmail(string email)
+    {
+        _logger.LogInformation("Fetching users that email contains {Email}", email);
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+
+        if ( email == null )
+            throw new Exception(UserError.EmailIsNullWhenSearching.ToString());
+
+        var users = await dbContext.Users.Where(u => u.Email.Contains(email)).ToListAsync();
+
+        if ( !users.Any() )
+            throw new Exception(UserError.NotUsersFoundByEmail.ToString());
+
+        return users;
     }
 
     public async Task<User> CreateUser(UserRegisterRequest request)
@@ -74,6 +93,17 @@ public class UserCommands : IUserCommands
 
         try
         {
+            await _emailSender.SendEmailAsync("batemo4912@gmail.com", "Prueba de verificacion", "Hola esta es una prueba");
+        }
+        catch ( Exception ex )
+        {
+            _logger.LogError("Something went wrong while sending email verification: {ErrorMessage}", ex.Message);
+            throw new Exception(UserError.ErrorSendingVerifycationEmail.ToString());
+        }
+
+
+        try
+        {
             dbContext.Users.Add(user);
             dbContext.Registrations.Add(registration);
             await dbContext.SaveChangesAsync();
@@ -86,6 +116,37 @@ public class UserCommands : IUserCommands
 
 
         return user;
+    }
+
+    public async Task RestoreVerifyToken(UserRestoreVerifyTokenRequest request)
+    {
+
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+        var userRegistration = await dbContext.Registrations.FirstOrDefaultAsync(r => r.User == user);
+
+        if ( user == null )
+            throw new Exception(UserError.UserNotFound.ToString());
+
+        if ( !VerifyPasswordHash(request.Password, user.PasswordHash, user.PasswordSalt) )
+            throw new Exception(UserError.IncorrectPassword.ToString());
+
+        if ( userRegistration == null )
+            throw new Exception(UserError.RegistrationNotFound.ToString());
+
+        userRegistration.VerificationToken = CreateRandomToken();
+        userRegistration.ExpiryTime = DateTime.UtcNow.AddMinutes(60);
+
+        try
+        {
+            await dbContext.SaveChangesAsync();
+        }
+        catch ( Exception ex )
+        {
+            _logger.LogError("Something went wrong while saving new token verification: {ErrorMessage}", ex.Message);
+            throw new Exception(UserError.SavingDataError.ToString());
+        }
+
     }
 
     public async Task<(User, string)> LoginUser(UserLoginRequest request)

@@ -1,0 +1,106 @@
+﻿@page "/reward-claims"
+@layout MainLayout
+@attribute [Authorize(Roles = "Editor, Admin")]
+@using GGR.Client.Areas.RewardClaim.Models;
+@using GGR.Client.Areas.RewardClaim.Services.Contracts;
+@using GGR.Shared.RewardClaim;
+@using GGR.Client.Areas.RewardClaim.Utils;
+
+<EditForm Model="@filter" class="border border-light container-sm p-5 rounded">
+    <DataAnnotationsValidator />
+
+    <div class="form-group mb-3">
+        <label class="form-label">Busca reclamos de recompensa por email</label>
+        <InputText class="form-control" @bind-Value="filter.Email" />
+        <ValidationMessage For="@(()=> filter.Email)" />
+    </div>
+</EditForm>
+
+
+@if ( RewardClaims.Any() )
+{
+    <table class="table table-bordered">
+        <thead class="thead-dark">
+            <tr>
+                <th scope="col">Email de usuario</th>
+                <th scope="col">Nombre de recompensa</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Reclamo creado</th>
+                <th scope="col">Acciones</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            @foreach ( var rewardClaim in RewardClaims )
+            {
+                <tr>
+                    <td scope="row">@rewardClaim.UserName</td>
+                    <td>@rewardClaim.RewardName</td>
+                    <td>@rewardClaim.RewardClaimStatus</td>
+                    <td>@rewardClaim.ClaimCreated</td>
+
+                    <td>
+                        <a class="btn btn-primary btn-sm" href="@($"{Routes.Reward.EditReward}/{rewardClaim.Id.ToString()}")">
+                            <i class="oi oi-pencil"></i> Cambiar estado de recompensa
+                        </a>
+                    </td>
+
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p class="text-center mt-5">Aún no hay reclamos de recompenza</p>
+}
+
+
+@code {
+    private List<RewardClaim> RewardClaims = new List<RewardClaim>();
+    public RewardClaimsFilter filter = new RewardClaimsFilter();
+
+    [Inject] private IRewardClaimClientService RewardClaimClientService { get; set; } = null!;
+    [Inject] private SweetAlertService Sweet { get; set; } = null!;
+    [Inject] private ILogger<RewardClaimsList> Logger { get; set; } = null!;
+    [Inject] private NavigationManager NavigationManager { get; set; } = null!;
+
+    private async Task HandleSubmit()
+    {
+        await LoadRewardClaims(filter.Email);
+    }
+
+    private async Task LoadRewardClaims(string? email)
+    {
+        var response = new ServiceResponse<GetAllRewardClaimsResponse>();
+
+        if ( email == null )
+            response = await RewardClaimClientService.GetAllRewardClaims();
+        else
+            response = await RewardClaimClientService.GetRewardClaimsByEmail(email);
+
+
+        if ( response.Data == null )
+        {
+            var toast = Sweet.Mixin(new SweetAlertOptions
+                {
+                    Toast = true,
+                    TimerProgressBar = true,
+                    Position = "top-end",
+                    ShowConfirmButton = false,
+                    Timer = 3000,
+                });
+
+            await toast.FireAsync(new SweetAlertOptions
+                {
+                    Icon = "danger",
+                    Title = response.Message
+                });
+        }
+        else
+        {
+            RewardClaims = response.Data.RewardClaims.Select(rewardClaim => RewardClaimMapper.MapToEntity(rewardClaim)).ToList();
+        }
+    }
+}

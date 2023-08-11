@@ -1,0 +1,71 @@
+﻿@page "/verify-user/{token}"
+@layout LoginLayoutAdmin
+@using GGR.Client.Areas.Users.Services.Contract;
+@using GGR.Shared.User;
+
+<h3 class="mb-5 mx-auto mt-4 text-center">Verficación de usuario</h3>
+
+@if ( _verificationSuccess && !_loading )
+{
+    <p>Verificacion completada correctamente</p>
+}
+else if ( _loading )
+{
+    <p>Comprobando token</p>
+}
+else
+{
+    <p>Error al validar token</p>
+    <button class="btn btn-primary" onclick="@(() => _showRestoreTokenForm = true;)">Obtener otro token</button>
+}
+
+@if ( _showRestoreTokenForm )
+{
+    <EditForm Model="@restoreTokenRequest" OnValidSubmit="@RestoreVerificationToken">
+        <div class="mb-3">
+            <label for="email" class="form-label">Correo Electronico</label>
+            <InputText @bind-Value="restoreTokenRequest.Email" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label for="password" class="form-label">Contraseña</label>
+            <InputText @bind-Value="restoreTokenRequest.Password" type="password" class="form-control" />
+        </div>
+
+        <button type="submit" class="btn btn-success">Iniciar Sesión</button>
+    </EditForm>
+}
+
+@code {
+    private bool _verificationSuccess = false;
+    private bool _loading = true;
+    private bool _showRestoreTokenForm = false;
+    private UserRestoreVerifyTokenRequest restoreTokenRequest = new UserRestoreVerifyTokenRequest();
+
+    [Parameter]
+    public string token { get; set; } = string.Empty;
+
+    [Inject]
+    private IUserClientService UserClientService { get; set; } = null!;
+    [Inject]
+    private ILogger<VerifyUser> Logger { get; set; } = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await UserClientService.VerifyUser(token);
+            _verificationSuccess = true;
+        }
+        catch ( Exception ex )
+        {
+            Logger.LogError("Error while verifing token {token} with message {ErrorMessage}", token, ex.Message);
+        }
+        _loading = false;
+    }
+
+    private async Task RestoreVerificationToken()
+    {
+
+    }
+}

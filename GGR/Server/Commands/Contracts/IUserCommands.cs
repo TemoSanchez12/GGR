@@ -10,4 +10,6 @@ public interface IUserCommands
     Task VerifyUser(string token);
     Task ForgotUserPassword(string email);
     Task RestoreUserPassword(ResetPasswordRequest request);
+    Task<List<User>> GetUsersByEmail(string email);
+    Task RestoreVerifyToken(UserRestoreVerifyTokenRequest request);
 }

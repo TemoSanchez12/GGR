@@ -40,6 +40,7 @@ builder.Services.AddAuthentication("Bearer").AddJwtBearer(options =>
 });
 
 
+builder.Services.AddScoped(sp => new HttpClient());
 
 // Inject Dependencies
 DependencyInjection.Configure(builder.Services, builder.Configuration);

@@ -2,6 +2,7 @@
 using GGR.Shared.User;
 using GGR.Shared;
 using System.Net.Http.Json;
+using System.ComponentModel.DataAnnotations;
 
 namespace GGR.Client.Areas.Users.Services;
 
@@ -48,5 +49,35 @@ public class UserClientService : IUserClientService
     {
         await _localStorageService.RemoveItemAsync("token");
         await _authenticationStateProvider.GetAuthenticationStateAsync();
+    }
+
+    public async Task<ServiceResponse<GetUsersResponse>> GetUsersByEmail(string email)
+    {
+        _logger.LogInformation($"Fetching users that contains email {email}");
+        var token = await _localStorageService.GetItemAsync<string>("token");
+        var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"api/User/get-by-email/{email}");
+
+        requestMessage.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        var response = await _httpClient.SendAsync(requestMessage);
+        var content = await response.Content.ReadFromJsonAsync<ServiceResponse<GetUsersResponse>>();
+
+        if ( content != null )
+        {
+            return content;
+        }
+        else
+        {
+            throw new Exception();
+        }
+    }
+
+    public async Task VerifyUser(string token)
+    {
+        _logger.LogInformation("Verifing user token {Token}", token);
+        var requestMessage = new HttpRequestMessage(HttpMethod.Post, $"api/User/verify?token={token}");
+        var response = await _httpClient.SendAsync(requestMessage);
+
+        response.EnsureSuccessStatusCode();
     }
 }
