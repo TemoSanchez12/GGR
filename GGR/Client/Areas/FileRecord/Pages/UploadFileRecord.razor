@@ -1,0 +1,121 @@
+@page "/upload-file-record"
+@layout MainLayout
+@attribute [Authorize(Roles = "Admin, Editor")]
+@using System.Net.Http.Headers;
+@using GGR.Client.Areas.FileRecord.Services.Contracts;
+
+<h3>Cargar documento de registros</h3>
+
+@if ( showInputFile )
+{
+    <InputFile class="form-control" OnChange="OnInputFileChage" />
+}
+else
+{
+    <p>Ya se ha subido un archivo el dia de hoy</p>
+}
+
+
+@if ( !string.IsNullOrEmpty(fileName) )
+{
+    <p>Nombre de archivo: @fileName</p>
+}
+
+@code {
+    private string fileName { get; set; } = string.Empty;
+    private long maxFileSize = 1048576;
+    private bool showInputFile = true;
+
+    [Inject]
+    private IFileRecordClientService FileRecordClientService { get; set; } = null!;
+
+    [Inject]
+    private SweetAlertService Sweet { get; set; } = null!;
+
+    [Inject]
+    private ILogger<UploadFileRecord> Logger { get; set; } = null!;
+
+    [Inject]
+    private HttpClient HttpClient { get; set; } = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await FileRecordClientService.GetFileRecordByDate(DateTime.Today);
+
+        if (response.Success && response.Data != null)
+        {
+            showInputFile = false;
+            fileName = response.Data.FileName;
+        }
+        else if (response.Success && response.Data == null)
+        {
+            showInputFile = true;
+        }
+        else
+        {
+            showInputFile = false;
+            await Sweet.FireAsync(new SweetAlertOptions
+                {
+                    Icon = "error",
+                    Title = response.Message
+                });
+        }  
+    }
+
+    private async Task OnInputFileChage(InputFileChangeEventArgs arg)
+    {
+        Logger.LogInformation("Uploading file record for date {Date}", DateTime.Today.ToString());
+        using var content = new MultipartFormDataContent();
+
+        var fileContent = new StreamContent(arg.File.OpenReadStream(maxFileSize));
+        fileName = arg.File.Name;
+        fileContent.Headers.ContentType = new MediaTypeHeaderValue(arg.File.ContentType);
+        content.Add(fileContent, "file", DateTime.Now.ToString("MM/dd/yyyy"));
+
+        var toast = Sweet.Mixin(new SweetAlertOptions
+            {
+                Toast = true,
+                TimerProgressBar = true,
+                Position = "top-end",
+                ShowConfirmButton = false,
+                Timer = 3000,
+            });
+
+        try
+        {
+            var resonse = await FileRecordClientService.UploadFile(content);
+
+            if ( resonse == null )
+                throw new Exception("Respuesta nulla");
+
+            if ( resonse.Data == null )
+            {
+                await toast.FireAsync(new SweetAlertOptions
+                    {
+                        Icon = "error",
+                        Title = resonse.Message
+                    });
+            }
+            else
+            {
+                await toast.FireAsync(new SweetAlertOptions
+                    {
+                        Icon = "success",
+                        Title = resonse.Message
+                    });
+                showInputFile = false;
+            }
+
+
+        }
+        catch ( Exception ex )
+        {
+            Logger.LogError("Error uploading file record {ErrorMessage}", ex.Message);
+            await toast.FireAsync(new SweetAlertOptions
+                {
+                    Icon = "error",
+                    Title = ex.Message
+                });
+        }
+    }
+}

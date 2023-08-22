@@ -6,5 +6,5 @@ namespace GGR.Server.Commands.Contracts;
 public interface ISaleTicketCommands
 {
     Task<List<SaleTicket>> GetTicketsByEmail(string email);
-    Task<SaleTicket> RegisterSaleTicket(RegisterSaleTicketRequest request);
+    Task<SaleTicket> RegisterTicket(RegisterTicketRequest request);
 }

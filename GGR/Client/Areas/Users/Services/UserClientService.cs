@@ -25,6 +25,23 @@ public class UserClientService : IUserClientService
         _localStorageService = localStorageService;
     }
 
+    public async Task<ServiceResponse<UserRegisterResponse>> RegisterUser(UserRegisterRequest request)
+    {
+        _logger.LogInformation("Sending register request for user email {UserEmail}", request.Email);
+
+        var response = await _httpClient.PostAsJsonAsync("api/User/register", request);
+        var content = await response.Content.ReadFromJsonAsync<ServiceResponse<UserRegisterResponse>>();
+
+        if ( content != null )
+        {
+            return content;
+        }
+        else
+        {
+            throw new Exception($"Content response for register user {request.Email} is null");
+        }
+    }
+
     public async Task<ServiceResponse<UserLoginResponse>> UserLogin(UserLoginRequest request)
     {
         _logger.LogInformation("Sending login request for user email {UserEmail}", request.Email);
@@ -78,6 +95,13 @@ public class UserClientService : IUserClientService
         var requestMessage = new HttpRequestMessage(HttpMethod.Post, $"api/User/verify?token={token}");
         var response = await _httpClient.SendAsync(requestMessage);
 
+        response.EnsureSuccessStatusCode();
+    }
+
+    public async Task RestoreVerifyToken(UserRestoreVerifyTokenRequest request)
+    {
+        _logger.LogInformation("Sending request for restore verify token");
+        var response = await _httpClient.PostAsJsonAsync("api/User/restore-verify-token", request);
         response.EnsureSuccessStatusCode();
     }
 }

@@ -7,4 +7,5 @@ public interface IRewardClaimClientService
 {
     Task<ServiceResponse<GetAllRewardClaimsResponse>> GetAllRewardClaims();
     Task<ServiceResponse<GetAllRewardClaimsResponse>> GetRewardClaimsByEmail(string email);
+    Task<ServiceResponse<UpdateRewardClaimStatusResponse>> UpdateRewardClaimStatus(UpdateRewardClaimStatusRequest request);
 }

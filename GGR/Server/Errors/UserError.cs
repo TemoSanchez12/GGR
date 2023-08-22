@@ -12,5 +12,6 @@ public enum UserError
     RegistrationExpired,
     EmailIsNullWhenSearching,
     NotUsersFoundByEmail,
-    ErrorSendingVerifycationEmail
+    ErrorSendingVerifycationEmail,
+    UserAlreadyVerified
 }

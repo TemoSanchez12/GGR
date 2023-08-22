@@ -4,8 +4,6 @@ using GGR.Shared;
 using GGR.Shared.RewardClaim;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Query;
-using System.Net.NetworkInformation;
 
 namespace GGR.Server.Controllers;
 

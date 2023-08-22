@@ -21,7 +21,7 @@ public class RewardClaim
             ClaimUpdated = ClaimUpdated,
             RewardId = Reward.Id,
             UserId = User.Id,
-            UserName = User.Name,
+            UserEmail = User.Email,
             RewardName = Reward.Name,
             RewardClaimStatus = RewardClaimStatus switch
             {

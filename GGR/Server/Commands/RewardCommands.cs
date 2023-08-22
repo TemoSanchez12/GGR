@@ -24,7 +24,7 @@ public class RewardCommands : IRewardCommands
     public async Task<List<Reward>> GetAllRewards()
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
-        var rewards = await dbContext.Rewards.ToListAsync();
+        var rewards = await dbContext.Rewards.Where(r => !string.IsNullOrWhiteSpace(r.Name)).ToListAsync();
         return rewards;
     }
 
@@ -32,9 +32,9 @@ public class RewardCommands : IRewardCommands
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
 
-        var reward = await dbContext.Rewards.FirstOrDefaultAsync(r => r.Id == rewardId);
+        var reward = await dbContext.Rewards.FirstOrDefaultAsync(r => r.Id == rewardId && r.Name != null);
 
-        if ( reward == null )
+        if (reward == null)
             throw new Exception(RewardError.RewardNotFound.ToString());
 
         return reward;
@@ -45,7 +45,7 @@ public class RewardCommands : IRewardCommands
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
 
-        if ( dbContext.Rewards.Any(reward => reward.Name == request.Name) )
+        if (dbContext.Rewards.Any(reward => reward.Name == request.Name))
             throw new Exception(RewardError.RewardAlreadyExists.ToString());
 
         var rewardId = Guid.NewGuid();
@@ -64,7 +64,7 @@ public class RewardCommands : IRewardCommands
             dbContext.Rewards.Add(reward);
             await dbContext.SaveChangesAsync();
         }
-        catch ( Exception ex )
+        catch (Exception ex)
         {
             _logger.LogError("Something went wrong while saving reward {ErrorMessage}", ex.Message);
             throw new Exception(RewardError.SavingDataError.ToString());
@@ -80,7 +80,7 @@ public class RewardCommands : IRewardCommands
         var reward = await dbContext.Rewards
             .FirstOrDefaultAsync(reward => reward.Id == Guid.Parse(request.RewardId));
 
-        if ( reward == null )
+        if (reward == null)
             throw new Exception(RewardError.RewardNotFound.ToString());
 
         reward.Name = request.Name;
@@ -93,7 +93,7 @@ public class RewardCommands : IRewardCommands
         {
             await dbContext.SaveChangesAsync();
         }
-        catch ( Exception ex )
+        catch (Exception ex)
         {
             _logger.LogError("Something went wrong while saving the update reward: {ErrorMessage}", ex.Message);
             throw new Exception(RewardError.SavingDataError.ToString());
@@ -107,7 +107,7 @@ public class RewardCommands : IRewardCommands
         var reward = await dbContext.Rewards
           .FirstOrDefaultAsync(reward => reward.Id == Guid.Parse(request.RewardId));
 
-        if ( reward == null )
+        if (reward == null)
             throw new Exception(RewardError.RewardNotFound.ToString());
 
         dbContext.Rewards.Remove(reward);
@@ -116,7 +116,7 @@ public class RewardCommands : IRewardCommands
         {
             await dbContext.SaveChangesAsync();
         }
-        catch ( Exception ex )
+        catch (Exception ex)
         {
             _logger.LogError("Something went wrong while removing reward {ErrorMessage}", ex.Message);
             throw new Exception(RewardError.SavingDataError.ToString());

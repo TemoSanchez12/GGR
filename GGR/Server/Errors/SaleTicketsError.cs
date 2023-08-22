@@ -3,5 +3,10 @@
 public enum SaleTicketsError
 {
     UserNotFoundWithEmail,
-    EmailIsNullOrEmpty
+    EmailIsNullOrEmpty,
+    FolioIsNullOrEmpty,
+    FolioAlreadyRegistered,
+    UserNotRegistered,
+    ErrorWhileSavingTicket,
+    TimeSpanBetweenTicketRegisterNotReached
 }

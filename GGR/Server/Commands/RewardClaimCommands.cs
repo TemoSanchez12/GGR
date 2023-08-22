@@ -33,7 +33,7 @@ public class RewardClaimCommands : IRewardClaimCommands
         _logger.LogInformation("Fetching all reward claims for user {Email}", email);
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
 
-        if ( email == null )
+        if (email == null)
             throw new Exception();
 
         var rewardClaims = dbContext.RewardClaims.Include(r => r.User)
@@ -48,18 +48,18 @@ public class RewardClaimCommands : IRewardClaimCommands
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
 
         var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == Guid.Parse(request.UserId));
-        if ( user == null )
+        if (user == null)
             throw new Exception(RewardClaimError.UserNotFound.ToString());
 
         var userRegistration = await dbContext.Registrations.FirstOrDefaultAsync(r => r.User == user);
-        if ( userRegistration == null || userRegistration.VerifiedAt == null )
+        if (userRegistration == null || userRegistration.VerifiedAt == null)
             throw new Exception(RewardClaimError.UserNotVerified.ToString());
 
-        var reward = await dbContext.Rewards.FirstOrDefaultAsync();
-        if ( reward == null )
+        var reward = await dbContext.Rewards.FirstOrDefaultAsync(r => r.Id == Guid.Parse(request.RewardClaimId));
+        if (reward == null)
             throw new Exception(RewardClaimError.RewardNotFound.ToString());
 
-        if ( user.Points < reward.PricePoints )
+        if (user.Points < reward.PricePoints)
             throw new Exception(RewardClaimError.NotEnoughPoints.ToString());
 
         var rewardClaimId = Guid.NewGuid();
@@ -79,7 +79,7 @@ public class RewardClaimCommands : IRewardClaimCommands
             await dbContext.AddAsync(rewardClaim);
             await dbContext.SaveChangesAsync();
         }
-        catch ( Exception ex )
+        catch (Exception ex)
         {
             _logger.LogError("Error while saving reward claim {ErrorMessage}", ex.Message);
             throw new Exception(RewardClaimError.ErrorSavingData.ToString());
@@ -96,7 +96,7 @@ public class RewardClaimCommands : IRewardClaimCommands
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
         var rewardClaim = await dbContext.RewardClaims.FirstOrDefaultAsync();
 
-        if ( rewardClaim == null )
+        if (rewardClaim == null)
             throw new Exception(RewardClaimError.RewardClaimNotFound.ToString());
 
         var newStatus = request.NewStatus switch
@@ -107,7 +107,7 @@ public class RewardClaimCommands : IRewardClaimCommands
             _ => throw new Exception()
         };
 
-        if ( newStatus == RewardClaimStatus.Unclaimed )
+        if (newStatus == RewardClaimStatus.Unclaimed)
             throw new Exception(RewardClaimError.NoAllowToAssignStatus.ToString());
 
         rewardClaim.RewardClaimStatus = newStatus;
@@ -116,7 +116,7 @@ public class RewardClaimCommands : IRewardClaimCommands
         {
             await dbContext.SaveChangesAsync();
         }
-        catch ( Exception ex )
+        catch (Exception ex)
         {
             _logger.LogError("Something gone wrong while updating reward claim status {ErrorMessage}", ex.Message);
             throw new Exception(RewardClaimError.ErrorSavingData.ToString());
@@ -134,7 +134,7 @@ public class RewardClaimCommands : IRewardClaimCommands
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
         var rewardClaim = await dbContext.RewardClaims.FirstOrDefaultAsync();
 
-        if ( rewardClaim == null )
+        if (rewardClaim == null)
             throw new Exception(RewardClaimError.RewardClaimNotFound.ToString());
 
         var newStatus = request.NewStatus switch
@@ -151,7 +151,7 @@ public class RewardClaimCommands : IRewardClaimCommands
         {
             await dbContext.SaveChangesAsync();
         }
-        catch ( Exception ex )
+        catch (Exception ex)
         {
             _logger.LogError("Something gone wrong while updating reward claim status {ErrorMessage}", ex.Message);
             throw new Exception(RewardClaimError.ErrorSavingData.ToString());

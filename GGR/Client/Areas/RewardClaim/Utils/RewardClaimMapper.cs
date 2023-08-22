@@ -19,6 +19,8 @@ public static class RewardClaimMapper
         {
             Id = definition.Id,
             UserId = definition.UserId,
+            RewardName = definition.RewardName,
+            UserEmail = definition.UserEmail,
             RewardId = definition.RewardId,
             RewardClaimStatus = rewardClaimStatus,
             ClaimCreated = definition.ClaimCreated,

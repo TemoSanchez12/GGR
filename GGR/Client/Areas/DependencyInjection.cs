@@ -2,11 +2,13 @@
 using GGR.Client.Areas.Users.Services;
 using GGR.Client.Areas.RewardClaim.Services;
 using GGR.Client.Areas.SaleTickets.Services;
+using GGR.Client.Areas.FileRecord.Services;
 
 using GGR.Client.Areas.Rewards.Services.Contracts;
 using GGR.Client.Areas.Users.Services.Contract;
 using GGR.Client.Areas.RewardClaim.Services.Contracts;
 using GGR.Client.Areas.SaleTickets.Services.Contracts;
+using GGR.Client.Areas.FileRecord.Services.Contracts;
 
 namespace GGR.Client.Areas;
 
@@ -18,5 +20,6 @@ public static class DependencyInjection
         services.AddScoped<IRewardClientService, RewardClientService>();
         services.AddScoped<IRewardClaimClientService, RewardClaimClientService>();
         services.AddScoped<ISaleTicketClientService, SaleTicketClientService>();
+        services.AddScoped<IFileRecordClientService, FileRecordClientService>();
     }
 }

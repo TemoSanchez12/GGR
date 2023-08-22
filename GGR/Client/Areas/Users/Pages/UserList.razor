@@ -9,7 +9,7 @@
     <DataAnnotationsValidator />
 
     <div class="form-group mb-3">
-        <label class="form-label">Busca reclamos de recompensa por email</label>
+        <label class="form-label">Busca usuarios por email</label>
         <InputText class="form-control" @bind-Value="filter.Email" />
         <ValidationMessage For="@(()=> filter.Email)" />
     </div>
@@ -45,7 +45,7 @@
                     <td>@user.Points</td>
                     <td>
                         <a class="btn btn-primary btn-sm" href="@($"{Routes.Reward.EditReward}/{user.Id.ToString()}")">
-                            <i class="oi oi-pencil"></i> Cambiar estado de recompensa
+                            <i class="oi oi-pencil"></i>
                         </a>
                     </td>
 
@@ -74,24 +74,35 @@ else
         await LoadUsers(filter.Email);
     }
 
-    private async Task LoadUsers(string email)
+    private async Task LoadUsers(string? email)
     {
+        var toast = Sweet.Mixin(new SweetAlertOptions
+            {
+                Toast = true,
+                TimerProgressBar = true,
+                Position = "top-end",
+                ShowConfirmButton = false,
+                Timer = 3000,
+            });
+
+        if ( string.IsNullOrEmpty(email) )
+        {
+            await toast.FireAsync(new SweetAlertOptions
+                {
+                    Icon = "error",
+                    Title = "El email no puede ser vacio"
+                });
+            return;
+        }
+
         var response = await UserClientService.GetUsersByEmail(email);
 
         if ( response.Data == null )
         {
-            var toast = Sweet.Mixin(new SweetAlertOptions
-                {
-                    Toast = true,
-                    TimerProgressBar = true,
-                    Position = "top-end",
-                    ShowConfirmButton = false,
-                    Timer = 3000,
-                });
 
             await toast.FireAsync(new SweetAlertOptions
                 {
-                    Icon = "danger",
+                    Icon = "error",
                     Title = response.Message
                 });
         }

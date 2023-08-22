@@ -22,6 +22,32 @@ namespace GGR.Server.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("GGR.Server.Data.Models.FileRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FileStorageName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UploadedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("key")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("FileRecords");
+                });
+
             modelBuilder.Entity("GGR.Server.Data.Models.Registration", b =>
                 {
                     b.Property<Guid>("Id")
@@ -124,6 +150,24 @@ namespace GGR.Server.Data.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("RewardClaims");
+                });
+
+            modelBuilder.Entity("GGR.Server.Data.Models.SaleRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Folio")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SaleRecords");
                 });
 
             modelBuilder.Entity("GGR.Server.Data.Models.SaleTicket", b =>

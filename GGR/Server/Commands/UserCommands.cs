@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using System.Text;
 using GGR.Server.Errors;
+using GGR.Server.Utils;
 
 namespace GGR.Server.Commands;
 
@@ -37,12 +38,12 @@ public class UserCommands : IUserCommands
         _logger.LogInformation("Fetching users that email contains {Email}", email);
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
 
-        if ( email == null )
+        if (email == null)
             throw new Exception(UserError.EmailIsNullWhenSearching.ToString());
 
         var users = await dbContext.Users.Where(u => u.Email.Contains(email)).ToListAsync();
 
-        if ( !users.Any() )
+        if (!users.Any())
             throw new Exception(UserError.NotUsersFoundByEmail.ToString());
 
         return users;
@@ -52,7 +53,7 @@ public class UserCommands : IUserCommands
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
 
-        if ( dbContext.Users.Any(user => user.Email == request.Email) )
+        if (dbContext.Users.Any(user => user.Email == request.Email))
             throw new Exception(UserError.EmailAlreadyRegistered.ToString());
 
         CreatePasswordHash(
@@ -93,9 +94,12 @@ public class UserCommands : IUserCommands
 
         try
         {
-            await _emailSender.SendEmailAsync("batemo4912@gmail.com", "Prueba de verificacion", "Hola esta es una prueba");
+            string? email = user.Rol == UserRole.Client ? user.Email : null;
+            var subject = "Verificación de cuenta GGR Gasolinera";
+
+            await _emailSender.SendEmailAsync(email, subject, EmailVerificationBuilder.BuildVerificationEmail(user, registration.VerificationToken));
         }
-        catch ( Exception ex )
+        catch (Exception ex)
         {
             _logger.LogError("Something went wrong while sending email verification: {ErrorMessage}", ex.Message);
             throw new Exception(UserError.ErrorSendingVerifycationEmail.ToString());
@@ -108,12 +112,11 @@ public class UserCommands : IUserCommands
             dbContext.Registrations.Add(registration);
             await dbContext.SaveChangesAsync();
         }
-        catch ( Exception ex )
+        catch (Exception ex)
         {
             _logger.LogError("Something went wrong while saving user: {ErrorMessage}", ex.Message);
             throw new Exception(UserError.SavingDataError.ToString());
         }
-
 
         return user;
     }
@@ -125,14 +128,17 @@ public class UserCommands : IUserCommands
         var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
         var userRegistration = await dbContext.Registrations.FirstOrDefaultAsync(r => r.User == user);
 
-        if ( user == null )
+        if (user == null)
             throw new Exception(UserError.UserNotFound.ToString());
 
-        if ( !VerifyPasswordHash(request.Password, user.PasswordHash, user.PasswordSalt) )
+        if (!VerifyPasswordHash(request.Password, user.PasswordHash, user.PasswordSalt))
             throw new Exception(UserError.IncorrectPassword.ToString());
 
-        if ( userRegistration == null )
+        if (userRegistration == null)
             throw new Exception(UserError.RegistrationNotFound.ToString());
+
+        if (userRegistration.VerifiedAt != null)
+            throw new Exception(UserError.UserAlreadyVerified.ToString());
 
         userRegistration.VerificationToken = CreateRandomToken();
         userRegistration.ExpiryTime = DateTime.UtcNow.AddMinutes(60);
@@ -141,7 +147,7 @@ public class UserCommands : IUserCommands
         {
             await dbContext.SaveChangesAsync();
         }
-        catch ( Exception ex )
+        catch (Exception ex)
         {
             _logger.LogError("Something went wrong while saving new token verification: {ErrorMessage}", ex.Message);
             throw new Exception(UserError.SavingDataError.ToString());
@@ -155,13 +161,13 @@ public class UserCommands : IUserCommands
         var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
         var userRegistration = await dbContext.Registrations.FirstOrDefaultAsync(r => r.User == user);
 
-        if ( user == null )
+        if (user == null)
             throw new Exception(UserError.UserNotFound.ToString());
 
-        if ( userRegistration == null || userRegistration.VerifiedAt == null )
+        if (userRegistration == null || userRegistration.VerifiedAt == null)
             throw new Exception(UserError.UserNotVerified.ToString());
 
-        if ( !VerifyPasswordHash(request.Password, user.PasswordHash, user.PasswordSalt) )
+        if (!VerifyPasswordHash(request.Password, user.PasswordHash, user.PasswordSalt))
             throw new Exception(UserError.IncorrectPassword.ToString());
 
 
@@ -175,13 +181,13 @@ public class UserCommands : IUserCommands
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
         var registration = dbContext.Registrations.Include(r => r.User).FirstOrDefault(r => r.VerificationToken == token);
 
-        if ( registration == null )
+        if (registration == null)
             throw new Exception(UserError.RegistrationNotFound.ToString());
 
-        if ( registration.ExpiryTime < DateTime.UtcNow )
+        if (registration.ExpiryTime < DateTime.UtcNow)
             throw new Exception(UserError.RegistrationExpired.ToString());
 
-        if ( registration.User == null )
+        if (registration.User == null)
             throw new Exception(UserError.UserNotFound.ToString());
 
         registration.VerifiedAt = DateTime.UtcNow;
@@ -192,7 +198,7 @@ public class UserCommands : IUserCommands
         {
             await dbContext.SaveChangesAsync();
         }
-        catch ( Exception ex )
+        catch (Exception ex)
         {
             _logger.LogError("Error saving registration data: {ErrorMessage} for user {UserId}", ex.Message, registration.User.Id);
             throw new Exception(UserError.SavingDataError.ToString());
@@ -204,12 +210,12 @@ public class UserCommands : IUserCommands
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
         var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
 
-        if ( user == null )
+        if (user == null)
             throw new Exception(UserError.UserNotFound.ToString());
 
         var registration = await dbContext.Registrations.FirstOrDefaultAsync(r => r.User == user);
 
-        if ( registration == null )
+        if (registration == null)
             throw new Exception(UserError.RegistrationNotFound.ToString());
 
         registration.PasswordResetToken = CreateRandomToken();
@@ -221,7 +227,7 @@ public class UserCommands : IUserCommands
         {
             await dbContext.SaveChangesAsync();
         }
-        catch ( Exception ex )
+        catch (Exception ex)
         {
             _logger.LogError("Error saving restore password data: {ErrorMessage} for user {UserId}", ex.Message, user.Id);
             throw new Exception(UserError.SavingDataError.ToString());
@@ -233,10 +239,10 @@ public class UserCommands : IUserCommands
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
         var registration = await dbContext.Registrations.Include(r => r.User).FirstOrDefaultAsync(r => r.PasswordResetToken == request.ResetToken);
 
-        if ( registration == null )
+        if (registration == null)
             throw new Exception(UserError.RegistrationNotFound.ToString());
 
-        if ( registration.ResetTokenExpires < DateTime.UtcNow )
+        if (registration.ResetTokenExpires < DateTime.UtcNow)
             throw new Exception(UserError.RegistrationExpired.ToString());
 
         CreatePasswordHash(
@@ -251,7 +257,7 @@ public class UserCommands : IUserCommands
         {
             await dbContext.SaveChangesAsync();
         }
-        catch ( Exception ex )
+        catch (Exception ex)
         {
             _logger.LogError("Something went wrong while saving user: {ErrorMessage}", ex.Message);
             throw new Exception(UserError.SavingDataError.ToString());

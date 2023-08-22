@@ -22,14 +22,14 @@ public class RewardClaimClientService : IRewardClaimClientService
     {
         _logger.LogInformation("Fetching all reward claims");
 
-        var token = await _localStorageService.GetItemAsStringAsync("token");
-        var requestMessage = new HttpRequestMessage(HttpMethod.Get, "api/RewardClaims/get-all-reward-claims");
+        var token = await _localStorageService.GetItemAsync<string>("token");
+        var requestMessage = new HttpRequestMessage(HttpMethod.Get, "api/RewardClaim/get-all-reward-claims");
         requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
         var response = await _httpClient.SendAsync(requestMessage);
         var content = await response.Content.ReadFromJsonAsync<ServiceResponse<GetAllRewardClaimsResponse>>();
 
-        if ( content != null )
+        if (content != null)
         {
             return content;
         }
@@ -39,18 +39,40 @@ public class RewardClaimClientService : IRewardClaimClientService
         }
     }
 
+    public async Task<ServiceResponse<UpdateRewardClaimStatusResponse>> UpdateRewardClaimStatus(UpdateRewardClaimStatusRequest request)
+    {
+        _logger.LogInformation("Updating reward claim status");
+
+        var token = await _localStorageService.GetItemAsync<string>("token");
+        var requestMessage = new HttpRequestMessage(HttpMethod.Put, "api/RewardClaim/update-reward-claim-status");
+        requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        requestMessage.Content = JsonContent.Create(request);
+
+        var response = await _httpClient.SendAsync(requestMessage);
+        var content = await response.Content.ReadFromJsonAsync<ServiceResponse<UpdateRewardClaimStatusResponse>>();
+
+        if (content != null)
+        {
+            return content;
+        }
+        else
+        {
+            throw new Exception("Content for updating reward claim status is null");
+        }
+    }
+
     public async Task<ServiceResponse<GetAllRewardClaimsResponse>> GetRewardClaimsByEmail(string email)
     {
         _logger.LogInformation("Fetching all reward claims");
 
-        var token = await _localStorageService.GetItemAsStringAsync("token");
-        var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"api/RewardClaims/get-reward-claims-email/{email}");
+        var token = await _localStorageService.GetItemAsync<string>("token");
+        var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"api/RewardClaim/get-reward-claims-email/{email}");
         requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
         var response = await _httpClient.SendAsync(requestMessage);
         var content = await response.Content.ReadFromJsonAsync<ServiceResponse<GetAllRewardClaimsResponse>>();
 
-        if ( content != null )
+        if (content != null)
         {
             return content;
         }

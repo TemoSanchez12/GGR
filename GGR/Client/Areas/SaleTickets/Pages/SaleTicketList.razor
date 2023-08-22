@@ -77,28 +77,41 @@ else
 
     private async Task LoadSaleTickets(string email)
     {
-        var response = await SaleTicketClientService.GetSaleTicketsByUserEmail(email);
-
-        if ( response.Data == null )
+        var toast = Sweet.Mixin(new SweetAlertOptions
+            {
+                Toast = true,
+                TimerProgressBar = true,
+                Position = "top-end",
+                ShowConfirmButton = false,
+                Timer = 3000,
+            });
+        try
         {
-            var toast = Sweet.Mixin(new SweetAlertOptions
-                {
-                    Toast = true,
-                    TimerProgressBar = true,
-                    Position = "top-end",
-                    ShowConfirmButton = false,
-                    Timer = 3000,
-                });
+            var response = await SaleTicketClientService.GetSaleTicketsByUserEmail(email);
 
+            if ( response.Data == null )
+            {
+
+                await toast.FireAsync(new SweetAlertOptions
+                    {
+                        Icon = "error",
+                        Title = response.Message
+                    });
+            }
+            else
+            {
+                Tickets = response.Data.Tickets.Select(saleTicket => SaleTicketMapper.MapToEntity(saleTicket)).ToList();
+            }
+        }
+        catch ( Exception ex )
+        {
+            Logger.LogError("Something went wrong {ErrorMesssage}", ex.Message);
             await toast.FireAsync(new SweetAlertOptions
                 {
-                    Icon = "danger",
-                    Title = response.Message
+                    Icon = "error",
+                    Title = "Algo ha salido mal, por favor intentelo más tarde"
                 });
         }
-        else
-        {
-            Tickets = response.Data.Tickets.Select(saleTicket => SaleTicketMapper.MapToEntity(saleTicket)).ToList();
-        }
+
     }
 }

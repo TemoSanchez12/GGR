@@ -14,6 +14,7 @@ public class SaleTicketController : ControllerBase
 {
     private static string _genericErrorMessage = "Algo ha salido mal, intentelo de nuevo";
     private static string _successGetTicketMessage = "Se han devuelto los tickets correctamente";
+    private static string _successRegisterTicketMessage = "Ticket registrado correctamente";
 
     private readonly ILogger<SaleTicketController> _logger;
     private readonly ISaleTicketCommands _saleTicketCommands;
@@ -37,16 +38,49 @@ public class SaleTicketController : ControllerBase
             response.Data = new GetSaleTicketsResponse { Tickets = tickets.Select(t => t.ToDefinition()).ToList() };
             return Ok(response);
         }
-        catch ( Exception ex )
+        catch (Exception ex)
         {
             _logger.LogError("Error while fetching user by email: {ErrorMessage}", ex.Message);
-            var error = (SaleTicketsError) Enum.Parse(typeof(SaleTicketsError), ex.Message);
+            var error = (SaleTicketsError)Enum.Parse(typeof(SaleTicketsError), ex.Message);
 
             response.Success = false;
             response.Message = error switch
             {
                 SaleTicketsError.UserNotFoundWithEmail => SaleTicketsErrorMessage.UserNotFoundWithEmail,
                 SaleTicketsError.EmailIsNullOrEmpty => SaleTicketsErrorMessage.EmailIsNullOrEmpty,
+                _ => _genericErrorMessage
+            };
+
+            return BadRequest(response);
+        }
+    }
+
+    [HttpPost("register-ticket")]
+    [Authorize(Roles = "Admin, Client")]
+    public async Task<ActionResult<ServiceResponse<RegisterTicketResponse>>> RegisterTicket(RegisterTicketRequest request)
+    {
+        var response = new ServiceResponse<RegisterTicketResponse>();
+        try
+        {
+            var ticket = await _saleTicketCommands.RegisterTicket(request);
+            response.Success = true;
+            response.Message = _successRegisterTicketMessage;
+            response.Data = new RegisterTicketResponse { SaleTicket = ticket.ToDefinition() };
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Error while registering ticket: {ErrorMessage}", ex.Message);
+            var error = (SaleTicketsError)Enum.Parse(typeof(SaleTicketsError), ex.Message);
+
+            response.Success = false;
+            response.Message = error switch
+            {
+                SaleTicketsError.UserNotFoundWithEmail => SaleTicketsErrorMessage.UserNotFoundWithEmail,
+                SaleTicketsError.EmailIsNullOrEmpty => SaleTicketsErrorMessage.EmailIsNullOrEmpty,
+                SaleTicketsError.FolioIsNullOrEmpty => SaleTicketsErrorMessage.FolioIsNullOrEmpty,
+                SaleTicketsError.FolioAlreadyRegistered => SaleTicketsErrorMessage.FolioAlreadyRegistered,
+                SaleTicketsError.TimeSpanBetweenTicketRegisterNotReached => SaleTicketsErrorMessage.TimeSpanBetweenTicketRegisterNotReached,
                 _ => _genericErrorMessage
             };
 

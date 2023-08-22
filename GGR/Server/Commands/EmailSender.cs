@@ -6,21 +6,41 @@ namespace GGR.Server.Commands;
 
 public class EmailSender : IEmailSender
 {
-    public Task SendEmailAsync(string email, string subject, string message)
+    private readonly IConfiguration _configuration;
+    public EmailSender(IConfiguration configuration)
     {
-        var mail = "temosanchez4912@gmail.com";
-        var pass = "hovhbuxiicidmtsd";
+        _configuration = configuration;
+    }
+
+    private class EmailOptions
+    {
+        public string Mail { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public string Host { get; set; } = string.Empty;
+        public int Port { get; set; }
+        public bool EnableSsl { get; set; }
+        public string PrincipalAdminEmail { get; set; } = string.Empty;
+    }
+
+    public Task SendEmailAsync(string? email, string subject, string message)
+    {
+        var emailOptions = _configuration.GetSection("EmailOptions").Get<EmailOptions>();
+        if (emailOptions is null)
+            throw new Exception("EmailOptions is null");
+
+        var mail = emailOptions.Mail;
+        var pass = emailOptions.Password;
 
         var client = new SmtpClient()
         {
-            Host = "smtp.gmail.com",
-            Port = 587,
-            EnableSsl = true,
+            Host = emailOptions.Host,
+            Port = emailOptions.Port,
+            EnableSsl = emailOptions.EnableSsl,
             Credentials = new NetworkCredential(mail, pass),
             DeliveryMethod = SmtpDeliveryMethod.Network,
         };
 
         return client.SendMailAsync(
-            new MailMessage(from: mail, to: email, subject, message));
+            new MailMessage(from: mail, to: email ?? emailOptions.PrincipalAdminEmail, subject, message));
     }
 }

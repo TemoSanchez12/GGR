@@ -38,10 +38,10 @@ public class UserController : ControllerBase
             response.Data = new GetUsersResponse { Users = users.Select(u => u.ToDefinition()).ToList() };
             return Ok(response);
         }
-        catch ( Exception ex )
+        catch (Exception ex)
         {
             _logger.LogError("Error while fetching user by email: {ErrorMessage}", ex.Message);
-            var error = (UserError) Enum.Parse(typeof(UserError), ex.Message);
+            var error = (UserError)Enum.Parse(typeof(UserError), ex.Message);
 
             response.Success = false;
             response.Message = error switch
@@ -67,10 +67,10 @@ public class UserController : ControllerBase
             response.Data = new UserRegisterResponse { UserCreated = user.ToDefinition() };
             return Ok(response);
         }
-        catch ( Exception ex )
+        catch (Exception ex)
         {
             _logger.LogError("Error while creating user: {ErrorMessage}", ex.Message);
-            var error = (UserError) Enum.Parse(typeof(UserError), ex.Message);
+            var error = (UserError)Enum.Parse(typeof(UserError), ex.Message);
 
             response.Success = false;
             response.Message = error switch
@@ -95,10 +95,10 @@ public class UserController : ControllerBase
             await _userCommands.RestoreVerifyToken(request);
             return Ok();
         }
-        catch ( Exception ex )
+        catch (Exception ex)
         {
             _logger.LogError("Error while verifying user: {ErrorMessage}", ex.Message);
-            var error = (UserError) Enum.Parse(typeof(UserError), ex.Message);
+            var error = (UserError)Enum.Parse(typeof(UserError), ex.Message);
 
             return error switch
             {
@@ -123,23 +123,23 @@ public class UserController : ControllerBase
             response.Data = new UserLoginResponse { User = user.ToDefinition(), Token = token };
             return Ok(response);
         }
-        catch ( Exception ex )
+        catch (Exception ex)
         {
             _logger.LogError("Error while login user: {ErrorMessage}", ex.Message);
-            var error = (UserError) Enum.Parse(typeof(UserError), ex.Message);
+            var error = (UserError)Enum.Parse(typeof(UserError), ex.Message);
             response.Success = false;
 
-            switch ( error )
+            switch (error)
             {
                 case UserError.UserNotFound:
                     response.Message = UserErrorMessage.UserNotFound;
                     return BadRequest(response);
                 case UserError.UserNotVerified:
                     response.Message = UserErrorMessage.UserNotVerified;
-                    return BadRequest(response);
+                    return Unauthorized(response);
                 case UserError.IncorrectPassword:
                     response.Message = UserErrorMessage.IncorrectPassword;
-                    return BadRequest(response);
+                    return Unauthorized(response);
                 default:
                     response.Message = _genericErrorMessage;
                     return BadRequest(response);
@@ -156,10 +156,10 @@ public class UserController : ControllerBase
             await _userCommands.VerifyUser(token);
             return Ok();
         }
-        catch ( Exception ex )
+        catch (Exception ex)
         {
             _logger.LogError("Error while verifying user: {ErrorMessage}", ex.Message);
-            var error = (UserError) Enum.Parse(typeof(UserError), ex.Message);
+            var error = (UserError)Enum.Parse(typeof(UserError), ex.Message);
 
             return error switch
             {
@@ -179,10 +179,10 @@ public class UserController : ControllerBase
             await _userCommands.ForgotUserPassword(email);
             return Ok();
         }
-        catch ( Exception ex )
+        catch (Exception ex)
         {
             _logger.LogError("Error while forgort password user: {ErrorMessage}", ex.Message);
-            var error = (UserError) Enum.Parse(typeof(UserError), ex.Message);
+            var error = (UserError)Enum.Parse(typeof(UserError), ex.Message);
 
             return error switch
             {
@@ -201,10 +201,10 @@ public class UserController : ControllerBase
             await _userCommands.RestoreUserPassword(request);
             return Ok();
         }
-        catch ( Exception ex )
+        catch (Exception ex)
         {
             _logger.LogError("Error while forgort password user: {ErrorMessage}", ex.Message);
-            var error = (UserError) Enum.Parse(typeof(UserError), ex.Message);
+            var error = (UserError)Enum.Parse(typeof(UserError), ex.Message);
 
             return error switch
             {

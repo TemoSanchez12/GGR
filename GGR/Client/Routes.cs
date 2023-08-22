@@ -27,4 +27,8 @@ public static class Routes
         public static string SaleTicketList = "/sale-tickets";
     }
 
+    public static class FileRecord
+    {
+        public static string UploadFileRecord = "/upload-file-record";
+    }
 }

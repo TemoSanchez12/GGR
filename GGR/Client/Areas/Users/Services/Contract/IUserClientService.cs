@@ -9,4 +9,6 @@ public interface IUserClientService
     Task UserLogout();
     Task<ServiceResponse<GetUsersResponse>> GetUsersByEmail(string email);
     Task VerifyUser(string token);
+    Task RestoreVerifyToken(UserRestoreVerifyTokenRequest request);
+    Task<ServiceResponse<UserRegisterResponse>> RegisterUser(UserRegisterRequest request);
 }

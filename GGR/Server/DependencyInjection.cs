@@ -13,5 +13,6 @@ public static class DependencyInjection
         services.AddScoped<IRewardClaimCommands, RewardClaimCommands>();
         services.AddScoped<ISaleTicketCommands, SaleTicketCommands>();
         services.AddTransient<IEmailSender, EmailSender>();
+        services.AddScoped<IFileRecordCommands, FileRecordCommands>();
     }
 }

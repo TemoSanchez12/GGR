@@ -1,0 +1,125 @@
+﻿@page "/register-admin"
+@layout LoginLayoutAdmin
+@using GGR.Client.Areas.Users.Services.Contract;
+@using GGR.Shared.User;
+@using GGR.Client;
+
+<h3 class="mb-5 mx-auto mt-4 text-center">Registrar Usuario</h3>
+
+<EditForm Model="registerRequest" OnValidSubmit="HandleValidSubmit" class="col-6 p-3 rounded-1 border border-secondary-subtle mx-auto">
+    <div class="mb-3">
+        <label for="email" class="form-label">Nombre</label>
+        <InputText @bind-Value="registerRequest.Name" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label for="email" class="form-label">Apellidos</label>
+        <InputText @bind-Value="registerRequest.LastName" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label for="email" class="form-label">Telefono celular</label>
+        <InputText @bind-Value="registerRequest.Phone" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label for="email" class="form-label">Correo Electronico</label>
+        <InputText @bind-Value="registerRequest.Email" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label for="password" class="form-label">Contraseña</label>
+        <InputText @bind-Value="registerRequest.Password" type="password" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label for="password" class="form-label">Confirme contraseña</label>
+        <InputText @bind-Value="registerRequest.ConfirmPassword" type="password" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label for="email" class="form-label">Rol de usuario</label>
+        <InputSelect @bind-Value="registerRequest.UserRol" class="form-select">
+            <option value="editor">Editor</option>
+            <option value="admin">Administrador</option>
+            <option value="client">Cliente</option>
+        </InputSelect>
+    </div>
+
+    <button type="submit" class="btn btn-success">Crear usuario</button>
+    @if ( loading )
+    {
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    }
+
+    <a href="/login-admin" class="text-primary m-lg-5">¿Ya tienes cuenta? Inicia sesión</a>
+</EditForm>
+
+
+@code {
+    private UserRegisterRequest registerRequest = new();
+    private bool loading = false;
+
+    [Inject] private IUserClientService UserClientService { get; set; } = null!;
+    [Inject] private SweetAlertService Sweet { get; set; } = null!;
+    [Inject] private ILogger<LoginAdmin> Logger { get; set; } = null!;
+    [Inject] private NavigationManager NavigationManager { get; set; } = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await UserClientService.UserLogout();
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            loading = true;
+            Logger.LogInformation("Sending login request for user {UserEmail}", registerRequest.Email);
+            var response = await UserClientService.RegisterUser(registerRequest);
+            var toast = Sweet.Mixin(new SweetAlertOptions
+                {
+                    Toast = true,
+                    TimerProgressBar = true,
+                    Position = "top-end",
+                    ShowConfirmButton = false,
+                    Timer = 3000,
+                });
+            loading = false;
+            if ( response.Success )
+            {
+
+                var alertText = registerRequest.UserRol == "client"
+                ? "Por favor revise su correo electronico para verificar su cuenta"
+                : "El admnistrador del sitio tendra que verificar tu cuenta";
+
+                await Sweet.FireAsync(new SweetAlertOptions
+                    {
+                        Title = "Cuenta creada exitosamente",
+                        Text = "Por favor revise su correo electronico para verificar su cuenta",
+                        Icon = SweetAlertIcon.Success,
+                        ShowCancelButton = false,
+                        ConfirmButtonText = "Entendido"
+                    });
+                NavigationManager.NavigateTo(Routes.Home);
+            }
+            else
+                await toast.FireAsync(new SweetAlertOptions
+                    {
+                        Icon = "error",
+                        Title = response.Message
+                    });
+        }
+        catch ( Exception ex )
+        {
+            Logger.LogError("Something went wrong while sending login request: {ErrorMessage}", ex.Message);
+            await Sweet.FireAsync(new SweetAlertOptions
+                {
+                    Icon = "error",
+                    Text = "Algo ha salido mal, por favor intentelo de nuevo"
+                });
+        }
+    }
+}

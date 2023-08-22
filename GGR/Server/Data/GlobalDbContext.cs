@@ -1,6 +1,5 @@
 ﻿using GGR.Server.Data.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Client;
 
 namespace GGR.Server.Data;
 
@@ -11,15 +10,17 @@ public class GlobalDbContext : DbContext
     public DbSet<Registration> Registrations { get; set; }
     public DbSet<RewardClaim> RewardClaims { get; set; }
     public DbSet<SaleTicket> SaleTickets { get; set; }
+    public DbSet<FileRecord> FileRecords { get; set; }
+    public DbSet<SaleRecord> SaleRecords { get; set; }
 
     public GlobalDbContext(DbContextOptions options) : base(options)
     {
 
     }
 
-    protected override void OnModelCreating(ModelBuilder modelBuiler)
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuiler.Entity<User>(builder =>
+        modelBuilder.Entity<User>(builder =>
         {
             builder.HasKey(user => user.Id);
             builder.Property(user => user.Name).IsRequired();
@@ -33,7 +34,7 @@ public class GlobalDbContext : DbContext
             builder.Property(user => user.Rol).IsRequired();
         });
 
-        modelBuiler.Entity<Reward>(builder =>
+        modelBuilder.Entity<Reward>(builder =>
         {
             builder.HasKey(reward => reward.Id);
             builder.Property(reward => reward.Name).IsRequired();
@@ -44,7 +45,7 @@ public class GlobalDbContext : DbContext
             builder.Property(reward => reward.Status).IsRequired();
         });
 
-        modelBuiler.Entity<Registration>(builder =>
+        modelBuilder.Entity<Registration>(builder =>
         {
             builder.HasKey(registration => registration.Id);
             builder.HasOne(registration => registration.User);
@@ -58,7 +59,7 @@ public class GlobalDbContext : DbContext
             builder.Property(registration => registration.ResetTokenExpires);
         });
 
-        modelBuiler.Entity<RewardClaim>(builder =>
+        modelBuilder.Entity<RewardClaim>(builder =>
         {
             builder.HasKey(claim => claim.Id);
             builder.HasOne(claim => claim.User);
@@ -68,13 +69,30 @@ public class GlobalDbContext : DbContext
             builder.Property(claim => claim.ClaimUpdated);
         });
 
-        modelBuiler.Entity<SaleTicket>(builder =>
+        modelBuilder.Entity<SaleTicket>(builder =>
         {
             builder.HasKey(ticket => ticket.Id);
             builder.HasOne(ticket => ticket.User);
             builder.Property(ticket => ticket.Amount);
             builder.Property(ticket => ticket.Points).IsRequired();
             builder.Property(ticket => ticket.Liters);
+            builder.Property(ticket => ticket.Folio).IsRequired();
+        });
+
+        modelBuilder.Entity<FileRecord>(builder =>
+        {
+            builder.HasKey(file => file.Id);
+            builder.Property(file => file.FileName).IsRequired();
+            builder.Property(file => file.FileStorageName).IsRequired();
+            builder.Property(file => file.key).IsRequired();
+            builder.Property(file => file.UploadedOn).IsRequired();
+        });
+
+        modelBuilder.Entity<SaleRecord>(builder =>
+        {
+            builder.HasKey(record => record.Id);
+            builder.Property(record => record.Folio).IsRequired();
+            builder.Property(record => record.Amount).IsRequired();
         });
     }
 }

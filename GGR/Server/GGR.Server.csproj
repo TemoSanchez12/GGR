@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>97a00b63-8dbd-4a85-a477-b00e0624054c</UserSecretsId>
+    <DebugType>portable</DebugType>
   </PropertyGroup>
 
   <ItemGroup>

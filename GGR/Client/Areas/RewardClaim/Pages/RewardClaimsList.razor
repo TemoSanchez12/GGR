@@ -6,7 +6,7 @@
 @using GGR.Shared.RewardClaim;
 @using GGR.Client.Areas.RewardClaim.Utils;
 
-<EditForm Model="@filter" class="border border-light container-sm p-5 rounded">
+<EditForm Model="@filter" class="border border-light container-sm p-5 rounded" OnValidSubmit="@HandleSubmit">
     <DataAnnotationsValidator />
 
     <div class="form-group mb-3">
@@ -14,6 +14,8 @@
         <InputText class="form-control" @bind-Value="filter.Email" />
         <ValidationMessage For="@(()=> filter.Email)" />
     </div>
+
+    <button type="submit" class="btn btn-primary">Buscar</button>
 </EditForm>
 
 
@@ -35,15 +37,21 @@
             @foreach ( var rewardClaim in RewardClaims )
             {
                 <tr>
-                    <td scope="row">@rewardClaim.UserName</td>
+                    <td scope="row">@rewardClaim.UserEmail</td>
                     <td>@rewardClaim.RewardName</td>
                     <td>@rewardClaim.RewardClaimStatus</td>
                     <td>@rewardClaim.ClaimCreated</td>
 
                     <td>
-                        <a class="btn btn-primary btn-sm" href="@($"{Routes.Reward.EditReward}/{rewardClaim.Id.ToString()}")">
-                            <i class="oi oi-pencil"></i> Cambiar estado de recompensa
-                        </a>
+                        @if (rewardClaim.RewardClaimStatus != GGR.Client.Areas.RewardClaim.Models.RewardClaimStatus.Claimed) {
+                            <button class="btn btn-primary btn-sm" @onclick="(async () => await HandleClaimReward(rewardClaim.Id.ToString(), rewardClaim.UserEmail))">
+                                Cambiar estado a reclamada
+                            </button>
+                        }
+                        else
+                        {
+                            <p>Acción no disponible</p>
+                        }
                     </td>
 
                 </tr>
@@ -71,36 +79,105 @@ else
         await LoadRewardClaims(filter.Email);
     }
 
-    private async Task LoadRewardClaims(string? email)
+    protected override async Task OnInitializedAsync()
     {
-        var response = new ServiceResponse<GetAllRewardClaimsResponse>();
+        await LoadRewardClaims(null);
+    }
 
-        if ( email == null )
-            response = await RewardClaimClientService.GetAllRewardClaims();
-        else
-            response = await RewardClaimClientService.GetRewardClaimsByEmail(email);
+    private async Task HandleClaimReward(string rewardClaimId, string userEmail) {
+        var toast = Sweet.Mixin(new SweetAlertOptions
+            {
+                Toast = true,
+                TimerProgressBar = true,
+                Position = "top-end",
+                ShowConfirmButton = false,
+                Timer = 3000,
+            });
 
-
-        if ( response.Data == null )
+        try
         {
-            var toast = Sweet.Mixin(new SweetAlertOptions
-                {
-                    Toast = true,
-                    TimerProgressBar = true,
-                    Position = "top-end",
-                    ShowConfirmButton = false,
-                    Timer = 3000,
-                });
+            var request = new UpdateRewardClaimStatusRequest
+            {
+                RewardClaimId = rewardClaimId,
+                NewStatus = GGR.Shared.RewardClaim.Definitions.RewardClaimStatusDefinition.Claimed,
+                UserEmail = userEmail
+            };
 
+            var response = await RewardClaimClientService.UpdateRewardClaimStatus(request);
+
+            if ( response.Data == null )
+            {
+                await toast.FireAsync(new SweetAlertOptions
+                    {
+                        Icon = "error",
+                        Title = response.Message
+                    });
+            }
+            else
+            {
+                await toast.FireAsync(new SweetAlertOptions
+                    {
+                        Icon = "success",
+                        Title = response.Message
+                    });
+            }
+        }
+        catch ( Exception ex )
+        {
+            Logger.LogError("Something went wrong claiming reward {ErrorMessage}", ex.Message);
             await toast.FireAsync(new SweetAlertOptions
                 {
-                    Icon = "danger",
-                    Title = response.Message
+                    Icon = "error",
+                    Title = ex.Message
                 });
         }
-        else
+    }
+
+    private async Task LoadRewardClaims(string? email)
+    {
+        var toast = Sweet.Mixin(new SweetAlertOptions
+            {
+                Toast = true,
+                TimerProgressBar = true,
+                Position = "top-end",
+                ShowConfirmButton = false,
+                Timer = 3000,
+            });
+
+        try
         {
-            RewardClaims = response.Data.RewardClaims.Select(rewardClaim => RewardClaimMapper.MapToEntity(rewardClaim)).ToList();
+            var response = new ServiceResponse<GetAllRewardClaimsResponse>();
+
+            if ( email == null )
+                response = await RewardClaimClientService.GetAllRewardClaims();
+            else
+                response = await RewardClaimClientService.GetRewardClaimsByEmail(email);
+
+
+            if ( response.Data == null )
+            {
+                await toast.FireAsync(new SweetAlertOptions
+                    {
+                        Icon = "error",
+                        Title = response.Message
+                    });
+            }
+            else
+            {
+                RewardClaims = response.Data.RewardClaims.Select(rewardClaim => RewardClaimMapper.MapToEntity(rewardClaim)).ToList();
+                StateHasChanged();
+
+            }
         }
+        catch ( Exception ex )
+        {
+            Logger.LogError("Something went wrong fetching reward clamis {ErrorMessage}", ex.Message);
+            await toast.FireAsync(new SweetAlertOptions
+                {
+                    Icon = "error",
+                    Title = ex.Message
+                });
+        }
+
     }
 }

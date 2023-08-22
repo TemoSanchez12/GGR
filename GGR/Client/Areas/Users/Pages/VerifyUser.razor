@@ -16,12 +16,12 @@ else if ( _loading )
 else
 {
     <p>Error al validar token</p>
-    <button class="btn btn-primary" onclick="@(() => _showRestoreTokenForm = true;)">Obtener otro token</button>
+    <button class="btn btn-primary" @onclick="(() => _showRestoreTokenForm = true)">Obtener otro token</button>
 }
 
 @if ( _showRestoreTokenForm )
 {
-    <EditForm Model="@restoreTokenRequest" OnValidSubmit="@RestoreVerificationToken">
+    <EditForm Model="@restoreTokenRequest" OnValidSubmit="@RestoreVerificationToken" class="mt-5 w-100">
         <div class="mb-3">
             <label for="email" class="form-label">Correo Electronico</label>
             <InputText @bind-Value="restoreTokenRequest.Email" class="form-control" />
@@ -47,8 +47,16 @@ else
 
     [Inject]
     private IUserClientService UserClientService { get; set; } = null!;
+
     [Inject]
     private ILogger<VerifyUser> Logger { get; set; } = null!;
+
+    [Inject]
+    private NavigationManager NavigationManager { get; set; } = null!;
+
+    [Inject]
+    private SweetAlertService Sweet { get; set; } = null!;
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -56,6 +64,16 @@ else
         {
             await UserClientService.VerifyUser(token);
             _verificationSuccess = true;
+            await Sweet.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Cuenta verificada exitosamente",
+                    Text = "Su cuenta ha sido verificada correctamente, ya puede iniciar sesión.",
+                    Icon = SweetAlertIcon.Success,
+                    ShowCancelButton = false,
+                    ConfirmButtonText = "Entendido"
+                });
+            NavigationManager.NavigateTo(Routes.User.LoginPage);
+
         }
         catch ( Exception ex )
         {
@@ -66,6 +84,33 @@ else
 
     private async Task RestoreVerificationToken()
     {
-
+        var toast = Sweet.Mixin(new SweetAlertOptions
+            {
+                Toast = true,
+                TimerProgressBar = true,
+                Position = "top-end",
+                ShowConfirmButton = false,
+                Timer = 3000,
+            });
+        try
+        {
+            Logger.LogInformation("Sending request for verify user with token {Token}", token);
+            await UserClientService.RestoreVerifyToken(restoreTokenRequest);
+            NavigationManager.NavigateTo(Routes.User.LoginPage);
+            await toast.FireAsync(new SweetAlertOptions
+                {
+                    Icon = "success",
+                    Title = "Se ha enviado el nuevo token de verificación al correo electronico."
+                });
+        }
+        catch ( Exception ex )
+        {
+            Logger.LogInformation("Something went wrong while restore verify token for user {Email} : {ErrorMessage}", restoreTokenRequest.Email, ex.Message);
+            await toast.FireAsync(new SweetAlertOptions
+                {
+                    Icon = "error",
+                    Title = "Algo ha salido mal, por favor intentelo más tarde."
+                });
+        }
     }
 }
