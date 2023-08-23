@@ -7,4 +7,5 @@ public interface ISaleTicketCommands
 {
     Task<List<SaleTicket>> GetTicketsByEmail(string email);
     Task<SaleTicket> RegisterTicket(RegisterTicketRequest request);
+    Task<int> GetTotalTicketsCount();
 }

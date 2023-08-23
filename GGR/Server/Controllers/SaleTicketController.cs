@@ -14,6 +14,7 @@ public class SaleTicketController : ControllerBase
 {
     private static string _genericErrorMessage = "Algo ha salido mal, intentelo de nuevo";
     private static string _successGetTicketMessage = "Se han devuelto los tickets correctamente";
+    private static string _successGetTicketsCountMessage = "Se ha devuelto el numero de tickets registrados";
     private static string _successRegisterTicketMessage = "Ticket registrado correctamente";
 
     private readonly ILogger<SaleTicketController> _logger;
@@ -38,10 +39,10 @@ public class SaleTicketController : ControllerBase
             response.Data = new GetSaleTicketsResponse { Tickets = tickets.Select(t => t.ToDefinition()).ToList() };
             return Ok(response);
         }
-        catch (Exception ex)
+        catch ( Exception ex )
         {
             _logger.LogError("Error while fetching user by email: {ErrorMessage}", ex.Message);
-            var error = (SaleTicketsError)Enum.Parse(typeof(SaleTicketsError), ex.Message);
+            var error = (SaleTicketsError) Enum.Parse(typeof(SaleTicketsError), ex.Message);
 
             response.Success = false;
             response.Message = error switch
@@ -68,10 +69,10 @@ public class SaleTicketController : ControllerBase
             response.Data = new RegisterTicketResponse { SaleTicket = ticket.ToDefinition() };
             return Ok(response);
         }
-        catch (Exception ex)
+        catch ( Exception ex )
         {
             _logger.LogError("Error while registering ticket: {ErrorMessage}", ex.Message);
-            var error = (SaleTicketsError)Enum.Parse(typeof(SaleTicketsError), ex.Message);
+            var error = (SaleTicketsError) Enum.Parse(typeof(SaleTicketsError), ex.Message);
 
             response.Success = false;
             response.Message = error switch
@@ -85,6 +86,28 @@ public class SaleTicketController : ControllerBase
             };
 
             return BadRequest(response);
+        }
+    }
+
+    [HttpGet("get-total-tickets-count")]
+    [Authorize(Roles = "Admin, Client")]
+    public async Task<ActionResult<ServiceResponse<GetTotalTicketsCount>>> GetTotalTicketsCount()
+    {
+        var response = new ServiceResponse<GetTotalTicketsCount>();
+        try
+        {
+            var totalTickets = await _saleTicketCommands.GetTotalTicketsCount();
+            response.Success = true;
+            response.Message = _successGetTicketsCountMessage;
+            response.Data = new GetTotalTicketsCount { TotalTicketsCount = totalTickets };
+            return Ok(response);
+        }
+        catch ( Exception ex )
+        {
+            _logger.LogError(ex, "Error while fetching tickets count");
+            response.Success = false;
+            response.Message = _genericErrorMessage;
+            return StatusCode(StatusCodes.Status500InternalServerError, response);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using GGR.Client.Areas.SaleTickets.Services.Contracts;
 using GGR.Shared;
+using GGR.Shared.Reward;
 using GGR.Shared.SaleTicket;
 using Microsoft.AspNetCore.Components;
 using System.Net.Http.Json;
@@ -37,12 +38,12 @@ public class SaleTicketClientService : ISaleTicketClientService
 
             var response = await _httpClient.SendAsync(requestMessage);
 
-            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            if ( response.StatusCode == System.Net.HttpStatusCode.Unauthorized )
                 _navigationManager.NavigateTo(Routes.User.LoginPageSesionExpired);
 
             var content = await response.Content.ReadFromJsonAsync<ServiceResponse<GetSaleTicketsResponse>>();
 
-            if (content != null)
+            if ( content != null )
             {
                 return content;
             }
@@ -51,7 +52,39 @@ public class SaleTicketClientService : ISaleTicketClientService
                 throw new Exception("Content for fetching ticket by email is null");
             }
         }
-        catch (Exception ex)
+        catch ( Exception ex )
+        {
+            throw new Exception($"{ex.Message}");
+        }
+    }
+
+    public async Task<ServiceResponse<GetTotalTicketsCount>> GetTotalTicketsCount()
+    {
+        _logger.LogInformation("Fetching total sale tickets count");
+
+        try
+        {
+            var token = await _localStorageService.GetItemAsync<string>("token");
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, "api/SaleTicket/get-total-tickets-count");
+            requestMessage.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _httpClient.SendAsync(requestMessage);
+
+            if ( response.StatusCode == System.Net.HttpStatusCode.Unauthorized )
+                _navigationManager.NavigateTo(Routes.User.LoginPageSesionExpired);
+
+            var content = await response.Content.ReadFromJsonAsync<ServiceResponse<GetTotalTicketsCount>>();
+
+            if ( content != null )
+            {
+                return content;
+            }
+            else
+            {
+                throw new Exception("Content for fetching total tickets counts is null");
+            }
+        }
+        catch ( Exception ex )
         {
             throw new Exception($"{ex.Message}");
         }

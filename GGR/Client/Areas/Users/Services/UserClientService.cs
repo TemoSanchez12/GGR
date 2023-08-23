@@ -35,7 +35,7 @@ public class UserClientService : IUserClientService
         var response = await _httpClient.PostAsJsonAsync("api/User/register", request);
         var content = await response.Content.ReadFromJsonAsync<ServiceResponse<UserRegisterResponse>>();
 
-        if (content != null)
+        if ( content != null )
         {
             return content;
         }
@@ -52,9 +52,9 @@ public class UserClientService : IUserClientService
         var response = await _httpClient.PostAsJsonAsync("api/User/login", request);
         var content = await response.Content.ReadFromJsonAsync<ServiceResponse<UserLoginResponse>>();
 
-        if (content != null)
+        if ( content != null )
         {
-            if (content.Success)
+            if ( content.Success )
             {
                 await _localStorageService.SetItemAsync("token", content.Data!.Token);
                 await _authenticationStateProvider.GetAuthenticationStateAsync();
@@ -82,12 +82,12 @@ public class UserClientService : IUserClientService
         var response = await _httpClient.SendAsync(requestMessage);
 
 
-        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        if ( response.StatusCode == System.Net.HttpStatusCode.Unauthorized )
             _navigationManager.NavigateTo(Routes.User.LoginPageSesionExpired);
 
         var content = await response.Content.ReadFromJsonAsync<ServiceResponse<GetUsersResponse>>();
 
-        if (content != null)
+        if ( content != null )
         {
             return content;
         }
@@ -111,5 +111,54 @@ public class UserClientService : IUserClientService
         _logger.LogInformation("Sending request for restore verify token");
         var response = await _httpClient.PostAsJsonAsync("api/User/restore-verify-token", request);
         response.EnsureSuccessStatusCode();
+    }
+
+    public async Task<ServiceResponse<GetTotalUsersResponse>> GetTotalUsers()
+    {
+        _logger.LogInformation("Getting total users");
+        var requestMessage = new HttpRequestMessage(HttpMethod.Get, "api/User/get-total-users");
+        var token = await _localStorageService.GetItemAsync<string>("token");
+        requestMessage.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        var response = await _httpClient.SendAsync(requestMessage);
+
+        if ( response.StatusCode == System.Net.HttpStatusCode.Unauthorized )
+            _navigationManager.NavigateTo(Routes.User.LoginPageSesionExpired);
+
+        var content = await response.Content.ReadFromJsonAsync<ServiceResponse<GetTotalUsersResponse>>();
+
+        if ( content != null )
+        {
+            return content;
+        } 
+        else
+        {
+            throw new Exception();
+        }
+
+    }
+
+    public async Task<ServiceResponse<GetTotalPointsResponse>> GetTotalPoints()
+    {
+        _logger.LogInformation("Getting total points");
+        var requestMessage = new HttpRequestMessage(HttpMethod.Get, "api/User/get-total-points");
+        var token = await _localStorageService.GetItemAsync<string>("token");
+        requestMessage.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        var response = await _httpClient.SendAsync(requestMessage);
+
+        if ( response.StatusCode == System.Net.HttpStatusCode.Unauthorized )
+            _navigationManager.NavigateTo(Routes.User.LoginPageSesionExpired);
+
+        var content = await response.Content.ReadFromJsonAsync<ServiceResponse<GetTotalPointsResponse>>();
+
+        if (content != null)
+        {
+            return content;
+        }
+        else
+        {
+            throw new Exception();
+        }
     }
 }

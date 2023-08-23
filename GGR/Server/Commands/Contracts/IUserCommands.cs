@@ -12,4 +12,6 @@ public interface IUserCommands
     Task RestoreUserPassword(ResetPasswordRequest request);
     Task<List<User>> GetUsersByEmail(string email);
     Task RestoreVerifyToken(UserRestoreVerifyTokenRequest request);
+    Task<int> GetTotalUsers();
+    Task<int> GetTotalPoints();
 }

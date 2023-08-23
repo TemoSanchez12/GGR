@@ -1,10 +1,83 @@
-﻿@page "/"
+﻿@layout MainLayout
+@using GGR.Client.Areas.Users.Services.Contract;
+@using GGR.Client.Areas.RewardClaim.Services.Contracts;
+@using GGR.Client.Areas.SaleTickets.Services.Contracts;
+
+@inject ILogger<Index> Logger;
+@inject IUserClientService UserClientService;
+@inject IRewardClaimClientService RewardClaimClientService;
+@inject ISaleTicketClientService SaleTicketsClientService;
+@inject SweetAlertService Sweet;
+
+@attribute [Route(Routes.Home)]
 @attribute [Authorize(Roles = "Editor, Admin")]
 
-<PageTitle>Index</PageTitle>
+<section>
+    <div>
+        <div class="card mb-3" style="width: 18rem;">
+            <div class="card-body">
+                <p class="card-text">Numero total de usuarios registrados:</p>
+                <h5 class="card-title">@TotalUsers</h5>
+                <a href="@Routes.User.UserList" class="btn btn-primary">Lista de usuarios</a>
+            </div>
+        </div>
 
-<h1>Hello, world!</h1>
+        <div class="card mb-3" style="width: 18rem;">
+            <div class="card-body">
+                <p class="card-text">Numero total de puntos registrados:</p>
+                <h5 class="card-title">@TotalPoints</h5>
+                <a href="@Routes.RewardClaim.RewardClaimList" class="btn btn-primary">Lista de reclamos</a>
+            </div>
+        </div>
 
-Welcome to your new app.
+        <div class="card mb-3" style="width: 18rem;">
+            <div class="card-body">
+                <p class="card-text">Numero total de tickets registrados:</p>
+                <h5 class="card-title">@TotalTickets</h5>
+                <a href="@Routes.Tickets.SaleTicketList" class="btn btn-primary">Lista de tickets registrados</a>
+            </div>
+        </div>
+    </div>
+</section>
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+@code {
+    private int TotalUsers { get; set; }
+    private int TotalPoints { get; set; }
+    private int TotalTickets { get; set; }
+    private int TotalRewardClaims { get; set; }
+    private int TotalPointsClaimed { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var toast = Sweet.Mixin(new SweetAlertOptions
+            {
+                Toast = true,
+                TimerProgressBar = true,
+                Position = "top-end",
+                ShowConfirmButton = false,
+                Timer = 3000,
+            });
+        try
+        {
+            var responseTotalUsers = await UserClientService.GetTotalUsers();
+            var responseTotalPoints = await UserClientService.GetTotalPoints();
+            var responseTotalTickets = await SaleTicketsClientService.GetTotalTicketsCount();
+
+            if ( responseTotalPoints.Data == null || responseTotalUsers.Data == null || responseTotalTickets.Data == null )
+                throw new Exception();
+
+            TotalPoints = responseTotalPoints.Data.TotalPoints;
+            TotalUsers = responseTotalUsers.Data.TotalUsers;
+            TotalTickets = responseTotalTickets.Data.TotalTicketsCount;
+        }
+        catch ( Exception ex )
+        {
+            Logger.LogError(ex, "Something went wrong while fetching dashboard information");
+            await toast.FireAsync(new SweetAlertOptions
+                {
+                    Icon = "error",
+                    Title = ex.Message
+                });
+        }
+    }
+}

@@ -11,4 +11,6 @@ public interface IUserClientService
     Task VerifyUser(string token);
     Task RestoreVerifyToken(UserRestoreVerifyTokenRequest request);
     Task<ServiceResponse<UserRegisterResponse>> RegisterUser(UserRegisterRequest request);
+    Task<ServiceResponse<GetTotalUsersResponse>> GetTotalUsers();
+    Task<ServiceResponse<GetTotalPointsResponse>> GetTotalPoints();
 }

@@ -15,6 +15,9 @@ public class UserController : ControllerBase
     private static string _successUserRegisterMessage = "El usuario ha sido registrado correctamento";
     private static string _successUserLoginMessage = "El login de usuario ha sido correcto";
     private static string _successGetUsersMessage = "Se han devuelto los usuarios con coincidencias";
+    private static string _successGetTotalUsersMessage = "Se han devuelto el numero total de usuarios";
+    private static string _successGetTotalPointsMessage = "Se han devuelto el total de puntos";
+    private static string _errorGettingTotalUsers = "Algo ha salido mal al obtener el numero de usuarios";
 
     private readonly ILogger<UserController> _logger;
     private readonly IUserCommands _userCommands;
@@ -38,10 +41,10 @@ public class UserController : ControllerBase
             response.Data = new GetUsersResponse { Users = users.Select(u => u.ToDefinition()).ToList() };
             return Ok(response);
         }
-        catch (Exception ex)
+        catch ( Exception ex )
         {
             _logger.LogError("Error while fetching user by email: {ErrorMessage}", ex.Message);
-            var error = (UserError)Enum.Parse(typeof(UserError), ex.Message);
+            var error = (UserError) Enum.Parse(typeof(UserError), ex.Message);
 
             response.Success = false;
             response.Message = error switch
@@ -52,6 +55,51 @@ public class UserController : ControllerBase
             };
 
             return BadRequest(response);
+        }
+    }
+
+    [HttpGet("get-total-users")]
+    [Authorize(Roles = "Admin, Editor")]
+    public async Task<ActionResult<ServiceResponse<GetTotalUsersResponse>>> GetTotalUsers()
+    {
+        var response = new ServiceResponse<GetTotalUsersResponse>();
+        try
+        {
+            var totalUsers = await _userCommands.GetTotalUsers();
+            response.Success = true;
+            response.Message = _successGetTotalUsersMessage;
+            response.Data = new GetTotalUsersResponse { TotalUsers = totalUsers };
+            return Ok(response);
+        }
+        catch ( Exception ex )
+        {
+            _logger.LogError(ex, "Something went wrong while fetching total user count");
+            response.Success = false;
+            response.Message = _errorGettingTotalUsers;
+
+            return StatusCode(StatusCodes.Status500InternalServerError, response);
+        }
+    }
+
+    [HttpGet("get-total-points")]
+    [Authorize(Roles = "Admin, Editor")]
+    public async Task<ActionResult<ServiceResponse<GetTotalPointsResponse>>> GetTotalPoints()
+    {
+        var response = new ServiceResponse<GetTotalPointsResponse>();
+        
+        try
+        {
+            var totalPoints = await _userCommands.GetTotalPoints();
+            response.Success = true;
+            response.Message = _successGetTotalPointsMessage;
+            response.Data = new GetTotalPointsResponse {  TotalPoints = totalPoints };
+            return Ok(response);
+        } catch ( Exception ex )
+        {
+            _logger.LogError(ex, "Something went wrong while fetching total points");
+            response.Success = false;
+            response.Message = _genericErrorMessage;
+            return StatusCode(StatusCodes.Status500InternalServerError, response);
         }
     }
 
@@ -67,10 +115,10 @@ public class UserController : ControllerBase
             response.Data = new UserRegisterResponse { UserCreated = user.ToDefinition() };
             return Ok(response);
         }
-        catch (Exception ex)
+        catch ( Exception ex )
         {
             _logger.LogError("Error while creating user: {ErrorMessage}", ex.Message);
-            var error = (UserError)Enum.Parse(typeof(UserError), ex.Message);
+            var error = (UserError) Enum.Parse(typeof(UserError), ex.Message);
 
             response.Success = false;
             response.Message = error switch
@@ -95,10 +143,10 @@ public class UserController : ControllerBase
             await _userCommands.RestoreVerifyToken(request);
             return Ok();
         }
-        catch (Exception ex)
+        catch ( Exception ex )
         {
             _logger.LogError("Error while verifying user: {ErrorMessage}", ex.Message);
-            var error = (UserError)Enum.Parse(typeof(UserError), ex.Message);
+            var error = (UserError) Enum.Parse(typeof(UserError), ex.Message);
 
             return error switch
             {
@@ -123,13 +171,13 @@ public class UserController : ControllerBase
             response.Data = new UserLoginResponse { User = user.ToDefinition(), Token = token };
             return Ok(response);
         }
-        catch (Exception ex)
+        catch ( Exception ex )
         {
             _logger.LogError("Error while login user: {ErrorMessage}", ex.Message);
-            var error = (UserError)Enum.Parse(typeof(UserError), ex.Message);
+            var error = (UserError) Enum.Parse(typeof(UserError), ex.Message);
             response.Success = false;
 
-            switch (error)
+            switch ( error )
             {
                 case UserError.UserNotFound:
                     response.Message = UserErrorMessage.UserNotFound;
@@ -156,10 +204,10 @@ public class UserController : ControllerBase
             await _userCommands.VerifyUser(token);
             return Ok();
         }
-        catch (Exception ex)
+        catch ( Exception ex )
         {
             _logger.LogError("Error while verifying user: {ErrorMessage}", ex.Message);
-            var error = (UserError)Enum.Parse(typeof(UserError), ex.Message);
+            var error = (UserError) Enum.Parse(typeof(UserError), ex.Message);
 
             return error switch
             {
@@ -179,10 +227,10 @@ public class UserController : ControllerBase
             await _userCommands.ForgotUserPassword(email);
             return Ok();
         }
-        catch (Exception ex)
+        catch ( Exception ex )
         {
             _logger.LogError("Error while forgort password user: {ErrorMessage}", ex.Message);
-            var error = (UserError)Enum.Parse(typeof(UserError), ex.Message);
+            var error = (UserError) Enum.Parse(typeof(UserError), ex.Message);
 
             return error switch
             {
@@ -201,10 +249,10 @@ public class UserController : ControllerBase
             await _userCommands.RestoreUserPassword(request);
             return Ok();
         }
-        catch (Exception ex)
+        catch ( Exception ex )
         {
             _logger.LogError("Error while forgort password user: {ErrorMessage}", ex.Message);
-            var error = (UserError)Enum.Parse(typeof(UserError), ex.Message);
+            var error = (UserError) Enum.Parse(typeof(UserError), ex.Message);
 
             return error switch
             {

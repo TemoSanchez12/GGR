@@ -25,29 +25,29 @@ public class SaleTicketCommands : ISaleTicketCommands
         _logger.LogInformation("Registering ticket for user {UserEmail}", request.UserEmail);
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
 
-        if (string.IsNullOrEmpty(request.UserEmail))
+        if ( string.IsNullOrEmpty(request.UserEmail) )
             throw new Exception(SaleTicketsError.EmailIsNullOrEmpty.ToString());
 
-        if (string.IsNullOrEmpty(request.Folio))
+        if ( string.IsNullOrEmpty(request.Folio) )
             throw new Exception(SaleTicketsError.FolioIsNullOrEmpty.ToString());
 
         var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == request.UserEmail);
         var registration = await dbContext.Registrations.FirstOrDefaultAsync(registration => registration.User == user);
 
-        if (user == null)
+        if ( user == null )
             throw new Exception(SaleTicketsError.UserNotFoundWithEmail.ToString());
 
-        if (await dbContext.SaleTickets.AnyAsync(ticket => ticket.Folio == request.Folio))
+        if ( await dbContext.SaleTickets.AnyAsync(ticket => ticket.Folio == request.Folio) )
             throw new Exception(SaleTicketsError.FolioAlreadyRegistered.ToString());
 
-        if (registration == null || registration.VerifiedAt == null)
+        if ( registration == null || registration.VerifiedAt == null )
             throw new Exception(SaleTicketsError.UserNotRegistered.ToString());
 
         var latesTicket = await dbContext.SaleTickets
             .OrderByDescending(ticket => ticket.CreatedAt)
             .FirstOrDefaultAsync(t => t.User == user);
 
-        if (latesTicket != null && latesTicket.CreatedAt.AddMinutes(30) > DateTime.Now)
+        if ( latesTicket != null && latesTicket.CreatedAt.AddMinutes(30) > DateTime.Now )
             throw new Exception(SaleTicketsError.TimeSpanBetweenTicketRegisterNotReached.ToString());
 
 
@@ -66,7 +66,7 @@ public class SaleTicketCommands : ISaleTicketCommands
         {
             await dbContext.SaveChangesAsync();
         }
-        catch (Exception ex)
+        catch ( Exception ex )
         {
             _logger.LogError("Error while saving ticket: {ErrorMessage}", ex.Message);
             throw new Exception(SaleTicketsError.ErrorWhileSavingTicket.ToString());
@@ -79,16 +79,27 @@ public class SaleTicketCommands : ISaleTicketCommands
         _logger.LogInformation("Fetching tickets by user email {UserEmail}", email);
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
 
-        if (string.IsNullOrEmpty(email))
+        if ( string.IsNullOrEmpty(email) )
             throw new Exception(SaleTicketsError.EmailIsNullOrEmpty.ToString());
 
         var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
 
-        if (user == null)
+        if ( user == null )
             throw new Exception(SaleTicketsError.UserNotFoundWithEmail.ToString());
 
         var saleTickets = dbContext.SaleTickets.Include(ticket => ticket.User).Where(ticket => ticket.User.Email == email);
 
         return saleTickets.ToList();
+    }
+
+    public async Task<int> GetTotalTicketsCount()
+    {
+        _logger.LogInformation("Fetching total tickets count {DateUtc}", DateTime.UtcNow);
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+
+        var totalTicketsCount = await dbContext.SaleTickets
+            .Where(ticket => ticket.Status == Data.Models.Utils.SaleTicketStatus.Checked).CountAsync();
+
+        return totalTicketsCount;
     }
 }
