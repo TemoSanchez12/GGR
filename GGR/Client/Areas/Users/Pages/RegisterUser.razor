@@ -1,8 +1,8 @@
-﻿@page "/register-admin"
-@layout LoginLayoutAdmin
-@using GGR.Client.Areas.Users.Services.Contract;
+﻿@using GGR.Client.Areas.Users.Services.Contract;
 @using GGR.Shared.User;
 @using GGR.Client;
+@layout LoginLayoutAdmin
+@attribute [Route(Routes.User.CreateUser)]
 
 <h3 class="mb-5 mx-auto mt-4 text-center">Registrar Usuario</h3>
 
@@ -54,7 +54,7 @@
         </div>
     }
 
-    <a href="/login-admin" class="text-primary m-lg-5">¿Ya tienes cuenta? Inicia sesión</a>
+    <a href="@Routes.User.LoginPage" class="text-primary m-lg-5">¿Ya tienes cuenta? Inicia sesión</a>
 </EditForm>
 
 

@@ -1,8 +1,8 @@
-﻿@page "/rewards/create"
-@layout MainLayout
-@attribute [Authorize(Roles = "Admin")]
+﻿@layout MainLayout
 @using GGR.Client.Areas.Rewards.Services.Contracts;
 @using GGR.Shared.Reward;
+@attribute [Authorize(Roles = "Admin")]
+@attribute [Route(Routes.Reward.CreateReward)]
 
 <h3>Crear nueva recompensa</h3>
 

@@ -1,4 +1,6 @@
 
+using System.Diagnostics.Eventing.Reader;
+
 namespace GGR.Server.Data.Models;
 
 public class FileRecord
@@ -8,4 +10,5 @@ public class FileRecord
     public string FileStorageName { get; set; } = string.Empty;
     public string key { get; set; } = string.Empty;
     public DateTime UploadedOn { get; set; } = DateTime.Now;
+    public bool IsProcessed { get; set; } = false;
 }

@@ -3,32 +3,41 @@ namespace GGR.Client;
 
 public static class Routes
 {
-    public static string Home = "/";
+    public const string Home = "/";
     public static class User
     {
-        public static string LoginPage = "/login-admin";
-        public static string UserList = "/users";
+        public const string LoginPage = "/login-admin";
+        public const string UserList = "/users";
+        public const string CreateUser = "/register-admin";
+        public const string EditUser = "/users/edit/{Id}";
+        public const string VerifyUser = "/verify-user/{token}";
+        public const string LoginPageSesionExpired = "/login-admin?sessionExpired=true";
     }
 
     public static class Reward
     {
-        public static string RewardsList = "/rewards";
-        public static string CreateReward = "/rewards/create";
-        public static string EditReward = "/rewards/edit";
+        public const string RewardsList = "/rewards";
+        public const string CreateReward = "/rewards/create";
+        public const string EditReward = "/rewards/edit/{Id}";
     }
 
     public static class RewardClaim
     {
-        public static string RewardClaimList = "/reward-claims";
+        public const string RewardClaimList = "/reward-claims";
     }
 
     public static class Tickets
     {
-        public static string SaleTicketList = "/sale-tickets";
+        public const string SaleTicketList = "/sale-tickets";
     }
 
     public static class FileRecord
     {
-        public static string UploadFileRecord = "/upload-file-record";
+        public const string UploadFileRecord = "/upload-file-record";
+    }
+
+    public static string ParseId(string route, string id)
+    {
+        return route.Replace("{Id}", id);
     }
 }

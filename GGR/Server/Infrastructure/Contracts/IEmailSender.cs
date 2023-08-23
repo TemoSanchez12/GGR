@@ -1,4 +1,4 @@
-﻿namespace GGR.Server.Commands.Contracts;
+﻿namespace GGR.Server.Infrastructure.Contracts;
 
 public interface IEmailSender
 {

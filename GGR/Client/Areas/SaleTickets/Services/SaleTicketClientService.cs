@@ -1,6 +1,7 @@
 ﻿using GGR.Client.Areas.SaleTickets.Services.Contracts;
 using GGR.Shared;
 using GGR.Shared.SaleTicket;
+using Microsoft.AspNetCore.Components;
 using System.Net.Http.Json;
 
 namespace GGR.Client.Areas.SaleTickets.Services;
@@ -10,9 +11,15 @@ public class SaleTicketClientService : ISaleTicketClientService
     private readonly HttpClient _httpClient;
     private readonly ILogger<SaleTicketClientService> _logger;
     private readonly ILocalStorageService _localStorageService;
+    private readonly NavigationManager _navigationManager;
 
-    public SaleTicketClientService(HttpClient httpClient, ILogger<SaleTicketClientService> logger, ILocalStorageService localStorageService)
+    public SaleTicketClientService(
+        HttpClient httpClient,
+        ILogger<SaleTicketClientService> logger,
+        ILocalStorageService localStorageService,
+        NavigationManager navigationManager)
     {
+        _navigationManager = navigationManager;
         _httpClient = httpClient;
         _logger = logger;
         _localStorageService = localStorageService;
@@ -29,6 +36,10 @@ public class SaleTicketClientService : ISaleTicketClientService
             requestMessage.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
             var response = await _httpClient.SendAsync(requestMessage);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                _navigationManager.NavigateTo(Routes.User.LoginPageSesionExpired);
+
             var content = await response.Content.ReadFromJsonAsync<ServiceResponse<GetSaleTicketsResponse>>();
 
             if (content != null)

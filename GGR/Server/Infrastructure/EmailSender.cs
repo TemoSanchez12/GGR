@@ -1,8 +1,8 @@
-﻿using GGR.Server.Commands.Contracts;
+﻿using GGR.Server.Infrastructure.Contracts;
 using System.Net;
 using System.Net.Mail;
 
-namespace GGR.Server.Commands;
+namespace GGR.Server.Infrastructure;
 
 public class EmailSender : IEmailSender
 {
@@ -25,7 +25,7 @@ public class EmailSender : IEmailSender
     public Task SendEmailAsync(string? email, string subject, string message)
     {
         var emailOptions = _configuration.GetSection("EmailOptions").Get<EmailOptions>();
-        if (emailOptions is null)
+        if ( emailOptions is null )
             throw new Exception("EmailOptions is null");
 
         var mail = emailOptions.Mail;

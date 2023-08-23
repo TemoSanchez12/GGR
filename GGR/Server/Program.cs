@@ -3,6 +3,7 @@ using GGR.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using GGR.Server.Commands;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,7 +39,6 @@ builder.Services.AddAuthentication("Bearer").AddJwtBearer(options =>
         ValidateIssuer = false,
     };
 });
-
 
 builder.Services.AddScoped(sp => new HttpClient());
 

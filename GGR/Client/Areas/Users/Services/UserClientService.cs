@@ -2,7 +2,7 @@
 using GGR.Shared.User;
 using GGR.Shared;
 using System.Net.Http.Json;
-using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Components;
 
 namespace GGR.Client.Areas.Users.Services;
 
@@ -12,13 +12,16 @@ public class UserClientService : IUserClientService
     private readonly ILogger<UserClientService> _logger;
     private readonly AuthenticationStateProvider _authenticationStateProvider;
     private readonly ILocalStorageService _localStorageService;
+    private readonly NavigationManager _navigationManager;
 
     public UserClientService(
         HttpClient httpClient,
         ILogger<UserClientService> logger,
         AuthenticationStateProvider authenticationStateProvider,
-        ILocalStorageService localStorageService)
+        ILocalStorageService localStorageService,
+        NavigationManager navigationManager)
     {
+        _navigationManager = navigationManager;
         _httpClient = httpClient;
         _logger = logger;
         _authenticationStateProvider = authenticationStateProvider;
@@ -32,7 +35,7 @@ public class UserClientService : IUserClientService
         var response = await _httpClient.PostAsJsonAsync("api/User/register", request);
         var content = await response.Content.ReadFromJsonAsync<ServiceResponse<UserRegisterResponse>>();
 
-        if ( content != null )
+        if (content != null)
         {
             return content;
         }
@@ -49,9 +52,9 @@ public class UserClientService : IUserClientService
         var response = await _httpClient.PostAsJsonAsync("api/User/login", request);
         var content = await response.Content.ReadFromJsonAsync<ServiceResponse<UserLoginResponse>>();
 
-        if ( content != null )
+        if (content != null)
         {
-            if ( content.Success )
+            if (content.Success)
             {
                 await _localStorageService.SetItemAsync("token", content.Data!.Token);
                 await _authenticationStateProvider.GetAuthenticationStateAsync();
@@ -77,9 +80,14 @@ public class UserClientService : IUserClientService
         requestMessage.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
         var response = await _httpClient.SendAsync(requestMessage);
+
+
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            _navigationManager.NavigateTo(Routes.User.LoginPageSesionExpired);
+
         var content = await response.Content.ReadFromJsonAsync<ServiceResponse<GetUsersResponse>>();
 
-        if ( content != null )
+        if (content != null)
         {
             return content;
         }

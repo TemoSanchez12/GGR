@@ -1,14 +1,14 @@
-@page "/upload-file-record"
-@layout MainLayout
-@attribute [Authorize(Roles = "Admin, Editor")]
 @using System.Net.Http.Headers;
 @using GGR.Client.Areas.FileRecord.Services.Contracts;
+@layout MainLayout
+@attribute [Authorize(Roles = "Admin, Editor")]
+@attribute [Route(Routes.FileRecord.UploadFileRecord)]
 
 <h3>Cargar documento de registros</h3>
 
 @if ( showInputFile )
 {
-    <InputFile class="form-control" OnChange="OnInputFileChage" />
+    <InputFile class="form-control" OnChange="OnInputFileChage" accept=".csv"/>
 }
 else
 {
@@ -45,6 +45,7 @@ else
         if (response.Success && response.Data != null)
         {
             showInputFile = false;
+            StateHasChanged();
             fileName = response.Data.FileName;
         }
         else if (response.Success && response.Data == null)
@@ -54,6 +55,7 @@ else
         else
         {
             showInputFile = false;
+            StateHasChanged();
             await Sweet.FireAsync(new SweetAlertOptions
                 {
                     Icon = "error",

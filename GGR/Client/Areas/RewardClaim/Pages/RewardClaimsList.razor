@@ -1,10 +1,10 @@
-﻿@page "/reward-claims"
-@layout MainLayout
-@attribute [Authorize(Roles = "Editor, Admin")]
-@using GGR.Client.Areas.RewardClaim.Models;
+﻿@using GGR.Client.Areas.RewardClaim.Models;
 @using GGR.Client.Areas.RewardClaim.Services.Contracts;
 @using GGR.Shared.RewardClaim;
 @using GGR.Client.Areas.RewardClaim.Utils;
+@layout MainLayout
+@attribute [Authorize(Roles = "Editor, Admin")]
+@attribute [Route(Routes.RewardClaim.RewardClaimList)]
 
 <EditForm Model="@filter" class="border border-light container-sm p-5 rounded" OnValidSubmit="@HandleSubmit">
     <DataAnnotationsValidator />

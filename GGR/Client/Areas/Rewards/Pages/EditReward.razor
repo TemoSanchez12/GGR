@@ -1,8 +1,10 @@
-﻿@page "/rewards/edit/{RewardId}"
-@layout MainLayout
-@attribute [Authorize(Roles = "Admin")]
+﻿@layout MainLayout
 @using GGR.Client.Areas.Rewards.Services.Contracts;
 @using GGR.Shared.Reward;
+@using GGR.Client.Areas.Rewards.Utils;
+
+@attribute [Authorize(Roles = "Admin")]
+@attribute [Route(Routes.Reward.EditReward)]
 
 <h3>Editar recompenza</h3>
 
@@ -35,7 +37,7 @@
 
     <div class="form-group mb-3">
         <label class="form-label">Esta activa</label>
-        <InputSelect class="form-control" @bind-Value="_reward.IsActive">
+        <InputSelect class="form-select" @bind-Value="_reward.IsActive">
             <option value="True">Si</option>
             <option value="False">No</option>
         </InputSelect>
@@ -52,7 +54,7 @@
 
     private UpdateRewardRequest _reward = new UpdateRewardRequest();
 
-    [Parameter] public string RewardId { get; set; } = string.Empty;
+    [Parameter] public string Id { get; set; } = string.Empty;
 
     [Inject] private IRewardClientService RewardClientService { get; set; } = null!;
     [Inject] private SweetAlertService Sweet { get; set; } = null!;
@@ -63,14 +65,18 @@
     {
         try
         {
-            var response = await RewardClientService.GetReward(RewardId);
+            var response = await RewardClientService.GetReward(Id);
+
             if ( response.Success && response.Data != null )
             {
-                _reward.RewardId = response.Data.Reward.Id.ToString();
-                _reward.Name = response.Data.Reward.Name;
-                _reward.Description = response.Data.Reward.Description;
-                _reward.PricePoints = response.Data.Reward.PricePoints;
-                _reward.UnitsAvailable = response.Data.Reward.UnitsAvailable;
+                var reward = RewardMapper.MapToEntity(response.Data.Reward);
+                _reward.RewardId = reward.Id.ToString();
+                _reward.Name = reward.Name;
+                _reward.Description = reward.Description;
+                _reward.PricePoints = reward.PricePoints;
+                _reward.UnitsAvailable = reward.UnitsAvailable;
+                _reward.IsActive = reward.Status == Models.RewardStatus.Available 
+                    ? true : false;
             }
         }
         catch ( Exception ex )

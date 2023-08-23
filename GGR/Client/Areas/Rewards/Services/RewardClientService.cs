@@ -1,6 +1,7 @@
 ﻿using GGR.Client.Areas.Rewards.Services.Contracts;
 using GGR.Shared;
 using GGR.Shared.Reward;
+using Microsoft.AspNetCore.Components;
 using System.Net.Http.Json;
 
 namespace GGR.Client.Areas.Rewards.Services;
@@ -10,12 +11,15 @@ public class RewardClientService : IRewardClientService
     private readonly HttpClient _httpClient;
     private readonly ILogger<RewardClientService> _logger;
     private readonly ILocalStorageService _localStorageService;
+    private readonly NavigationManager _navigationManager;
 
     public RewardClientService(
         HttpClient httpClient,
         ILogger<RewardClientService> logger,
-        ILocalStorageService localStorageService)
+        ILocalStorageService localStorageService,
+        NavigationManager navigationManager)
     {
+        _navigationManager = navigationManager;
         _httpClient = httpClient;
         _logger = logger;
         _localStorageService = localStorageService;
@@ -28,7 +32,7 @@ public class RewardClientService : IRewardClientService
         var response = await _httpClient.GetAsync("api/Reward/get-all");
         var content = await response.Content.ReadFromJsonAsync<ServiceResponse<GetAllRewardsReponse>>();
 
-        if ( content != null )
+        if (content != null)
         {
             return content;
         }
@@ -45,7 +49,7 @@ public class RewardClientService : IRewardClientService
         var response = await _httpClient.GetAsync($"api/Reward/get/{rewardId}");
         var content = await response.Content.ReadFromJsonAsync<ServiceResponse<GetRewardResponse>>();
 
-        if ( content != null )
+        if (content != null)
         {
             return content;
         }
@@ -65,9 +69,13 @@ public class RewardClientService : IRewardClientService
         requestMessaage.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
         var response = await _httpClient.SendAsync(requestMessaage);
+
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            _navigationManager.NavigateTo(Routes.User.LoginPageSesionExpired);
+
         var content = await response.Content.ReadFromJsonAsync<ServiceResponse<CreateRewardResponse>>();
 
-        if ( content != null )
+        if (content != null)
         {
             return content;
         }
@@ -92,9 +100,13 @@ public class RewardClientService : IRewardClientService
         };
 
         var response = await _httpClient.SendAsync(requestMessaage);
+
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            _navigationManager.NavigateTo(Routes.User.LoginPageSesionExpired);
+
         var content = await response.Content.ReadFromJsonAsync<ServiceResponse<UpdateRewardResponse>>();
 
-        if ( content != null )
+        if (content != null)
         {
             return content;
         }
@@ -114,9 +126,12 @@ public class RewardClientService : IRewardClientService
 
         try
         {
-            await _httpClient.SendAsync(requestMessaage);
+            var response = await _httpClient.SendAsync(requestMessaage);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                _navigationManager.NavigateTo(Routes.User.LoginPageSesionExpired);
         }
-        catch ( Exception ex )
+        catch (Exception ex)
         {
             _logger.LogError(ex.Message);
             throw new Exception("Something went wrong while deleting the reward");

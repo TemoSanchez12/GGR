@@ -6,5 +6,6 @@ public enum FileRecordError
     FileAlreadyUploadedToday,
     ErrorSavingFileRecordToDatabase,
     ErrorSendingEmail,
-    FileNotFound
+    FileNotFound,
+    FileIsNotCsv
 }

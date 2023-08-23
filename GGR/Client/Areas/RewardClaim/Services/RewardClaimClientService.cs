@@ -1,6 +1,7 @@
 ﻿using GGR.Client.Areas.RewardClaim.Services.Contracts;
 using GGR.Shared;
 using GGR.Shared.RewardClaim;
+using Microsoft.AspNetCore.Components;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 
@@ -10,9 +11,15 @@ public class RewardClaimClientService : IRewardClaimClientService
     private readonly HttpClient _httpClient;
     private readonly ILogger<RewardClaimClientService> _logger;
     private readonly ILocalStorageService _localStorageService;
+    private readonly NavigationManager _navigationManager;
 
-    public RewardClaimClientService(HttpClient httpClient, ILogger<RewardClaimClientService> logger, ILocalStorageService localStorageService)
+    public RewardClaimClientService(
+        HttpClient httpClient,
+        ILogger<RewardClaimClientService> logger,
+        ILocalStorageService localStorageService,
+        NavigationManager navigationManager)
     {
+        _navigationManager = navigationManager;
         _httpClient = httpClient;
         _logger = logger;
         _localStorageService = localStorageService;
@@ -27,6 +34,9 @@ public class RewardClaimClientService : IRewardClaimClientService
         requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
         var response = await _httpClient.SendAsync(requestMessage);
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            _navigationManager.NavigateTo(Routes.User.LoginPageSesionExpired);
+
         var content = await response.Content.ReadFromJsonAsync<ServiceResponse<GetAllRewardClaimsResponse>>();
 
         if (content != null)
@@ -49,6 +59,9 @@ public class RewardClaimClientService : IRewardClaimClientService
         requestMessage.Content = JsonContent.Create(request);
 
         var response = await _httpClient.SendAsync(requestMessage);
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            _navigationManager.NavigateTo(Routes.User.LoginPageSesionExpired);
+
         var content = await response.Content.ReadFromJsonAsync<ServiceResponse<UpdateRewardClaimStatusResponse>>();
 
         if (content != null)
@@ -70,6 +83,9 @@ public class RewardClaimClientService : IRewardClaimClientService
         requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
         var response = await _httpClient.SendAsync(requestMessage);
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            _navigationManager.NavigateTo(Routes.User.LoginPageSesionExpired);
+
         var content = await response.Content.ReadFromJsonAsync<ServiceResponse<GetAllRewardClaimsResponse>>();
 
         if (content != null)

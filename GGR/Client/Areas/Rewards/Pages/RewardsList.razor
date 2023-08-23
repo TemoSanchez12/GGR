@@ -1,9 +1,9 @@
-﻿@page "/rewards"
-@layout MainLayout
+﻿@layout MainLayout
 @using GGR.Client.Areas.Rewards.Services.Contracts;
 @using GGR.Client.Areas.Rewards.Models;
 @using GGR.Client.Areas.Rewards.Utils;
 @attribute [Authorize(Roles = "Editor, Admin")]
+@attribute [Route(Routes.Reward.RewardsList)]
 
 <AuthorizeView Roles="Admin">
     <Authorized>
@@ -43,7 +43,7 @@
                     <AuthorizeView Roles="Admin">
                         <Authorized>
                             <td>
-                                <a class="btn btn-primary btn-sm" href="@($"{Routes.Reward.EditReward}/{reward.Id.ToString()}")">
+                                <a class="btn btn-primary btn-sm" href="@(Routes.ParseId(Routes.Reward.EditReward, reward.Id.ToString()))">
                                     <i class="oi oi-pencil"></i>
                                 </a>
 

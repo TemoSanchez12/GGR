@@ -73,7 +73,8 @@ public class FileRecordController : ControllerBase
             var fileName = await _fileRecordCommands.GetFileByDate(request.Date);
             response.Success = true;
             response.Message = _successUploadFileMessage;
-            response.Data = new GetFileByDateResponse { FileName = fileName };
+            if (fileName != null)
+                response.Data = new GetFileByDateResponse { FileName = fileName };
             return Ok(response);
 
         }

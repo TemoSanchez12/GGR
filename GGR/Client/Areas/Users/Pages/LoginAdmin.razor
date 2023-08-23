@@ -1,9 +1,10 @@
-﻿@page "/login-admin"
-@layout LoginLayoutAdmin
-@using GGR.Client.Areas.Users.Services.Contract;
+﻿@using GGR.Client.Areas.Users.Services.Contract;
 @using GGR.Shared.User;
 @using GGR.Client;
+@using System.Web;
 
+@layout LoginLayoutAdmin
+@attribute [Route(Routes.User.LoginPage)]
 
 <h3 class="mb-5 mx-auto mt-4 text-center">Iniciar Sesión</h3>
 
@@ -20,12 +21,13 @@
 
     <button type="submit" class="btn btn-success">Iniciar Sesión</button>
 
-    <a href="/register-admin" class="text-primary m-lg-5">¿No tienes cuenta? Crea una</a>
+    <a href="@Routes.User.CreateUser" class="text-primary m-lg-5">¿No tienes cuenta? Crea una</a>
 </EditForm>
 
 @code {
     private UserLoginRequest loginRequest = new();
 
+    [Parameter] public string? SessionExpired {get;set;}
     [Inject] private IUserClientService UserClientService { get; set; } = null!;
     [Inject] private SweetAlertService Sweet { get; set; } = null!;
     [Inject] private ILogger<LoginAdmin> Logger { get; set; } = null!;
@@ -34,6 +36,19 @@
     protected override async Task OnInitializedAsync()
     {
         await UserClientService.UserLogout();
+        var sessionExpired = HttpUtility.ParseQueryString
+            (new Uri(NavigationManager.Uri).Query)
+        .Get("sessionExpired");
+
+        if ( sessionExpired == "true" )
+        {
+            await Sweet.FireAsync(new SweetAlertOptions
+                {
+                    Icon = "info",
+                    Title = "Su sesión ha expirado",
+                    Text = "Por favor inicie sesión nuevamente"
+                });
+        }
     }
 
     private async Task HandleValidSubmit()

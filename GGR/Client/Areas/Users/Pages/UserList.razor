@@ -1,9 +1,9 @@
-﻿@page "/users"
-@layout MainLayout
-@attribute [Authorize(Roles = "Editor, Admin")]
-@using GGR.Client.Areas.Users.Models;
+﻿@using GGR.Client.Areas.Users.Models;
 @using GGR.Client.Areas.Users.Services.Contract;
 @using GGR.Client.Areas.Users.Utils;
+@layout MainLayout
+@attribute [Authorize(Roles = "Editor, Admin")]
+@attribute [Route(Routes.User.UserList)]
 
 <EditForm Model="@filter" OnValidSubmit="@HandleSubmitForm" class="border border-light container-sm p-5 rounded">
     <DataAnnotationsValidator />
@@ -44,7 +44,7 @@
                     <td>@user.Phone</td>
                     <td>@user.Points</td>
                     <td>
-                        <a class="btn btn-primary btn-sm" href="@($"{Routes.Reward.EditReward}/{user.Id.ToString()}")">
+                        <a class="btn btn-primary btn-sm" href="@(Routes.ParseId(Routes.User.EditUser, user.Id.ToString()))">
                             <i class="oi oi-pencil"></i>
                         </a>
                     </td>

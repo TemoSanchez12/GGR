@@ -11,6 +11,7 @@ using System.Security.Claims;
 using System.Text;
 using GGR.Server.Errors;
 using GGR.Server.Utils;
+using GGR.Server.Infrastructure.Contracts;
 
 namespace GGR.Server.Commands;
 

@@ -1,6 +1,7 @@
 using GGR.Client.Areas.FileRecord.Services.Contracts;
 using GGR.Shared;
 using GGR.Shared.FileRecord;
+using Microsoft.AspNetCore.Components;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 
@@ -11,9 +12,15 @@ public class FileRecordClientService : IFileRecordClientService
     private readonly HttpClient _httpClient;
     private readonly ILogger<FileRecordClientService> _logger;
     private readonly ILocalStorageService _localStorageService;
+    private readonly NavigationManager _navigationManager;
 
-    public FileRecordClientService(HttpClient httpClient, ILogger<FileRecordClientService> logger, ILocalStorageService localStorageService)
+    public FileRecordClientService(
+        HttpClient httpClient,
+        ILogger<FileRecordClientService> logger,
+        ILocalStorageService localStorageService,
+        NavigationManager navigationManager)
     {
+        _navigationManager = navigationManager;
         _httpClient = httpClient;
         _logger = logger;
         _localStorageService = localStorageService;
@@ -30,6 +37,11 @@ public class FileRecordClientService : IFileRecordClientService
             requestMessage.Content = file;
 
             var response = await _httpClient.SendAsync(requestMessage);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                _navigationManager.NavigateTo(Routes.User.LoginPageSesionExpired);
+
+
             var content = await response.Content.ReadFromJsonAsync<ServiceResponse<UploadFileResponse>>();
 
             if (content != null)
@@ -57,6 +69,10 @@ public class FileRecordClientService : IFileRecordClientService
 
         var response = await _httpClient.SendAsync(requestMessage);
         var content = await response.Content.ReadFromJsonAsync<ServiceResponse<GetFileByDateResponse>>();
+
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            _navigationManager.NavigateTo(Routes.User.LoginPageSesionExpired);
+
 
         if (content != null)
         {

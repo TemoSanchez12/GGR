@@ -1,9 +1,9 @@
-﻿@page "/sale-tickets"
-@layout MainLayout
-@attribute [Authorize(Roles = "Admin, Editar")]
-@using GGR.Client.Areas.SaleTickets.Utils;
+﻿@using GGR.Client.Areas.SaleTickets.Utils;
 @using GGR.Client.Areas.SaleTickets.Models;
 @using GGR.Client.Areas.SaleTickets.Services.Contracts;
+@layout MainLayout
+@attribute [Authorize(Roles = "Admin, Editar")]
+@attribute [Route(Routes.Tickets.SaleTicketList)]
 
 
 <EditForm Model="@filter" OnValidSubmit="@HandleSubmitForm" class="border border-light container-sm p-5 rounded">
