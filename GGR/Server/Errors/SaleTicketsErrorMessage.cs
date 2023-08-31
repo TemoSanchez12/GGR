@@ -7,4 +7,6 @@ public static class SaleTicketsErrorMessage
     public static string FolioIsNullOrEmpty = "No se ha proporcionado ningún folio";
     public static string FolioAlreadyRegistered = "El folio proporcionado ya ha sido registrado";
     public static string TimeSpanBetweenTicketRegisterNotReached = "Tiene que esperar 30 minutos para registrar otro ticket";
+    public static string UserNotFoundWithId = "No se ha encontrado ningun usuario con el id proporcionado";
+    public static string IdIsNullOrEmpty = "No se ha proporcionado ningun Id";
 }

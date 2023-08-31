@@ -1,0 +1,93 @@
+﻿@using GGR.Shared.SaleTicket;
+@using GGR.Client.Areas.SaleTickets.Services.Contracts;
+
+@inject ISaleTicketClientService TicketClientService;
+@inject SweetAlertService Sweet;
+
+
+<Modal Open="@Open">
+    <div class="d-flex mb-3" style="justify-content: end; cursor: pointer;" @onclick="CloseModal">
+        <div style="width: 20px; height: 3px; background: #F47174; transform: translateX(20px) rotate(45deg); " class="rounded"></div>
+        <div style="width: 20px; height: 3px; background: #F47174; transform: rotate(-45deg); " class="rounded"></div>
+    </div>
+
+    <EditForm Model="@registerRequest" OnValidSubmit="@HandleValidSubmit">
+        <div class="d-flex flex-column mt-3" style="">
+            <label for="folio" class="form-customer-label mb-2">Registra el folio de tu ticket</label>
+            <InputText @bind-Value="registerRequest.Folio" class="form-control" />
+        </div>
+
+        <button type="submit" class="px-2 py-1 border-0 rounded text-white mt-3" style="background-color: #7A5EEA; bottom: 30px; right: 30px;">
+            Registrar ticket
+        </button>
+    </EditForm>
+</Modal>
+
+@code {
+    private RegisterTicketRequest registerRequest = new RegisterTicketRequest();
+
+    [Parameter]
+    public string CustomerId { get; set; } = string.Empty;
+
+    [Parameter]
+    public bool Open { get; set; }
+
+    [Parameter]
+    public EventCallback OnCloseModal { get; set; }
+
+    private void CloseModal()
+    {
+        OnCloseModal.InvokeAsync();
+    }
+
+    protected override void OnInitialized()
+    {
+        registerRequest.UserId = CustomerId;
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            var response = await TicketClientService.RegisterTicket(registerRequest);
+
+            var toast = Sweet.Mixin(new SweetAlertOptions
+                {
+                    Toast = true,
+                    TimerProgressBar = true,
+                    Position = "top-end",
+                    ShowConfirmButton = false,
+                    Timer = 3000,
+                });
+
+            if ( response.Success )
+            {
+                CloseModal();
+                await toast.FireAsync(new SweetAlertOptions
+                    {
+                        Icon = "success",
+                        Title = response.Message
+                    });
+            }
+            else
+            {
+                CloseModal();
+                await toast.FireAsync(new SweetAlertOptions
+                    {
+                        Icon = "error",
+                        Title = response.Message
+                    });
+            }
+        }
+        catch ( Exception ex )
+        {
+            await Sweet.FireAsync(new SweetAlertOptions
+                {
+                    Icon = "error",
+                    Text = "Algo ha salido mal, por favor intentelo de nuevo"
+                });
+        }
+        CloseModal();
+        registerRequest = new RegisterTicketRequest { UserId = CustomerId };
+    }
+}

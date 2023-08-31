@@ -281,6 +281,59 @@ public class UserCommands : IUserCommands
         }
     }
 
+    public async Task<User> GetUserById(Guid id)
+    {
+        _logger.LogInformation("Fetching user id {UserId}", id);
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+
+        var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
+
+        if ( user == null )
+            throw new Exception(UserError.UserNotFound.ToString());
+
+        return user;
+    }
+
+    public async Task<User> UpdateUser(UpdateUserRequest request)
+    {
+        _logger.LogInformation("Updating user with id {UserId}", request.Id);
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+
+        var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == request.Id);
+
+        if ( user == null )
+            throw new Exception(UserError.UserNotFound.ToString());
+
+        user.Name = request.Name;
+        user.LastName = request.LastName;
+        user.Phone = request.Phone;
+
+        if ( !string.IsNullOrEmpty(request.NewPassword) )
+        {
+            if ( request.NewPassword != request.ConfirmPassword )
+                throw new Exception(UserError.PasswordsDoesNotMatch.ToString());
+
+            CreatePasswordHash(
+            request.NewPassword,
+            out byte[] passwordHash,
+            out byte[] passwordSalt);
+
+            user.PasswordSalt = passwordSalt;
+            user.PasswordHash = passwordHash;
+        }
+
+        try
+        {
+            await dbContext.SaveChangesAsync();
+            return user;
+        }
+        catch ( Exception ex )
+        {
+            _logger.LogError("Something went wrong while saving user: {ErrorMessage}", ex.Message);
+            throw new Exception(UserError.SavingDataError.ToString());
+        }
+    }
+
     private static void CreatePasswordHash(
         string password,
         out byte[] passwordHash,
@@ -308,6 +361,7 @@ public class UserCommands : IUserCommands
             new Claim(ClaimTypes.Name, user.Name),
             new Claim(ClaimTypes.Role, user.Rol.ToString()),
             new Claim(ClaimTypes.Email, user.Email),
+            new Claim(ClaimTypes.UserData, user.Id.ToString()),
         };
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("Jwt").GetSection("Key").Value!));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);

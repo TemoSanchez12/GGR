@@ -4,6 +4,7 @@ using GGR.Shared;
 using GGR.Shared.User;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Net.NetworkInformation;
 
 namespace GGR.Server.Controllers;
 
@@ -18,6 +19,7 @@ public class UserController : ControllerBase
     private static string _successGetTotalUsersMessage = "Se han devuelto el numero total de usuarios";
     private static string _successGetTotalPointsMessage = "Se han devuelto el total de puntos";
     private static string _errorGettingTotalUsers = "Algo ha salido mal al obtener el numero de usuarios";
+    private static string _successUpdatingUserMessage = "El usuario se ha actualizado correctamente";
 
     private readonly ILogger<UserController> _logger;
     private readonly IUserCommands _userCommands;
@@ -86,17 +88,66 @@ public class UserController : ControllerBase
     public async Task<ActionResult<ServiceResponse<GetTotalPointsResponse>>> GetTotalPoints()
     {
         var response = new ServiceResponse<GetTotalPointsResponse>();
-        
+
         try
         {
             var totalPoints = await _userCommands.GetTotalPoints();
             response.Success = true;
             response.Message = _successGetTotalPointsMessage;
-            response.Data = new GetTotalPointsResponse {  TotalPoints = totalPoints };
+            response.Data = new GetTotalPointsResponse { TotalPoints = totalPoints };
             return Ok(response);
-        } catch ( Exception ex )
+        }
+        catch ( Exception ex )
         {
             _logger.LogError(ex, "Something went wrong while fetching total points");
+            response.Success = false;
+            response.Message = _genericErrorMessage;
+            return StatusCode(StatusCodes.Status500InternalServerError, response);
+        }
+    }
+
+    [HttpGet("get-user-by-id/{id}")]
+    [Authorize(Roles = "Admin, Editor")]
+    public async Task<ActionResult<ServiceResponse<GetUserResponse>>> GetUserById(string id)
+    {
+        var response = new ServiceResponse<GetUserResponse>();
+        try
+        {
+            _logger.LogInformation("Getting user by id {UserId}", id);
+            var user = await _userCommands.GetUserById(Guid.Parse(id));
+            response.Success = true;
+            response.Message = "";
+            response.Data = new GetUserResponse { User = user.ToDefinition() };
+            return Ok(response);
+        }
+        catch ( Exception ex )
+        {
+            _logger.LogError(ex, "Something went wrong while fetching user by id");
+            response.Success = false;
+            response.Message = _genericErrorMessage;
+            return StatusCode(StatusCodes.Status500InternalServerError, response);
+        }
+    }
+
+    [HttpPut("update-user")]
+    [Authorize(Roles = "Admin, Editor")]
+    public async Task<ActionResult<ServiceResponse<GetUserResponse>>> UpdateUser(UpdateUserRequest request)
+    {
+        var response = new ServiceResponse<GetUserResponse>();
+
+        try
+        {
+            _logger.LogInformation("Updating user with id {UserId}", request.Id);
+            var user = await _userCommands.UpdateUser(request);
+            response.Success = true;
+            response.Message = _successUpdatingUserMessage;
+            response.Data = new GetUserResponse { User = user.ToDefinition() };
+            return Ok(response);
+
+        }
+        catch ( Exception ex )
+        {
+            _logger.LogError(ex, "Something went wrong while updating user");
             response.Success = false;
             response.Message = _genericErrorMessage;
             return StatusCode(StatusCodes.Status500InternalServerError, response);

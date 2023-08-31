@@ -1,0 +1,21 @@
+﻿.navbar {
+  height: 80px;
+  display: flex;
+  overflow: hidden;
+  margin: 0 auto;
+  align-items: center;
+}
+
+.navbar-link {
+  color: black;
+  text-decoration: none;
+}
+
+.navbar-logo {
+  height: 100%;
+}
+
+.navbar-links {
+  display: flex;
+  gap: 20px;
+}

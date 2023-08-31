@@ -3,7 +3,18 @@ namespace GGR.Client;
 
 public static class Routes
 {
-    public const string Home = "/";
+    public const string Dashboard = "/dashboard";
+
+    public static class Customer
+    {
+        public const string Index = "/";
+        public const string LoginCustomer = "/inicio-sesion";
+        public const string RewardDetailCustomer = "/recompensa/{id}";
+        public const string LoginCustomerSessionExpired = "/inicio-sesion?sessionExpired=true";
+        public const string Profile = "/profile";
+        public const string ClaimedRewards = "/recompensas-reclamadas";
+    }
+
     public static class User
     {
         public const string LoginPage = "/login-admin";

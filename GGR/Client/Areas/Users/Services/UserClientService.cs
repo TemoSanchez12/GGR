@@ -3,6 +3,7 @@ using GGR.Shared.User;
 using GGR.Shared;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components;
+using System.Net;
 
 namespace GGR.Client.Areas.Users.Services;
 
@@ -130,7 +131,7 @@ public class UserClientService : IUserClientService
         if ( content != null )
         {
             return content;
-        } 
+        }
         else
         {
             throw new Exception();
@@ -152,7 +153,60 @@ public class UserClientService : IUserClientService
 
         var content = await response.Content.ReadFromJsonAsync<ServiceResponse<GetTotalPointsResponse>>();
 
-        if (content != null)
+        if ( content != null )
+        {
+            return content;
+        }
+        else
+        {
+            throw new Exception();
+        }
+    }
+
+    public async Task<ServiceResponse<GetUserResponse>> GetUserById(string id)
+    {
+        _logger.LogInformation("Getting user by id");
+        var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"api/User/get-user-by-id/{id}");
+        var token = await _localStorageService.GetItemAsync<string>("token");
+        requestMessage.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        try
+        {
+            var response = await _httpClient.SendAsync(requestMessage);
+            var content = await response.Content.ReadFromJsonAsync<ServiceResponse<GetUserResponse>>();
+
+            if ( content != null )
+            {
+                return content;
+            }
+            else
+            {
+                throw new Exception();
+            }
+        }
+        catch ( Exception ex )
+        {
+            _navigationManager.NavigateTo(Routes.Customer.LoginCustomerSessionExpired);
+            return new ServiceResponse<GetUserResponse>();
+        }
+    }
+
+    public async Task<ServiceResponse<GetUserResponse>> UpdateUser(UpdateUserRequest request)
+    {
+        _logger.LogInformation("Updating user with id {UserId}", request.Id);
+        var requestMessage = new HttpRequestMessage(HttpMethod.Put, "api/User/update-user");
+        var token = await _localStorageService.GetItemAsync<string>("token");
+        requestMessage.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        requestMessage.Content = JsonContent.Create(request);
+
+        var response = await _httpClient.SendAsync(requestMessage);
+
+        if ( response.StatusCode == System.Net.HttpStatusCode.Unauthorized )
+            _navigationManager.NavigateTo(Routes.User.LoginPageSesionExpired);
+
+        var content = await response.Content.ReadFromJsonAsync<ServiceResponse<GetUserResponse>>();
+
+        if ( content != null )
         {
             return content;
         }

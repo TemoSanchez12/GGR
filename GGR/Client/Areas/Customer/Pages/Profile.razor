@@ -1,0 +1,153 @@
+﻿@layout CustomerLayout
+@using GGR.Client.Areas.Users.Services.Contract;
+@using GGR.Shared.User;
+@using GGR.Client.Areas.Users.Utils;
+@using System.Security.Claims;
+
+@attribute [Authorize(Roles = "Admin, Editor, Client")]
+@attribute [Route(Routes.Customer.Profile)]
+
+
+<EditForm Model="_request" OnValidSubmit="@OnValidSubmitHandler" class="border border-light container-sm p-5 rounded" style="background: #FFF8E7; width: min(90%, 700px);">
+    <DataAnnotationsValidator />
+
+    <div class="form-group mb-3">
+        <label class="form-label">Nombre</label>
+        <InputText class="form-control" @bind-Value="_request.Name" />
+        <ValidationMessage For="@(()=> _request.Name)" />
+    </div>
+
+    <div class="form-group mb-3">
+        <label class="form-label">Apellidos</label>
+        <InputText class="form-control" @bind-Value="_request.LastName" />
+        <ValidationMessage For="@(()=> _request.LastName)" />
+    </div>
+
+    <div class="form-group mb-3">
+        <label class="form-label">Phone</label>
+        <InputText class="form-control" @bind-Value="_request.Phone" max="10" />
+        <ValidationMessage For="@(()=> _request.Phone)" />
+    </div>
+
+    <p class="btn btn-warning mt-5 mb-3" @onclick="OnEnableChagePasssword">Cambiar contraseña</p>
+
+    <div class="form-group mb-3">
+        <label class="form-label">Nueva contraseña</label>
+        <InputText class="form-control" @bind-Value="_request.NewPassword" disabled="@(!EnablePasswordChange)" type="password" />
+        <ValidationMessage For="@(()=> _request.NewPassword)" />
+    </div>
+
+    <div class="form-group mb-3">
+        <label class="form-label">Confirme nueva contraseña</label>
+        <InputText class="form-control" @bind-Value="_request.ConfirmPassword" max="10" disabled="@(!EnablePasswordChange)" type="password" />
+        <ValidationMessage For="@(()=> _request.ConfirmPassword)" />
+    </div>
+
+    <div class="">
+        <button type="submit" class="btn btn-success btn-lg">Editar</button>
+    </div>
+
+</EditForm>
+
+@code {
+    private bool EnablePasswordChange { get; set; } = false;
+    private UpdateUserRequest _request = new UpdateUserRequest();
+    private string Id { get; set; } = string.Empty;
+
+    [Inject] private IUserClientService UserClientService { get; set; } = null!;
+    [Inject] private SweetAlertService Sweet { get; set; } = null!;
+    [Inject] private NavigationManager NavigationManager { get; set; } = null!;
+    [Inject] private AuthenticationStateProvider AuthStateProvider { get; set; } = null!;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var claims = authState.User.Claims;
+        Id = claims.First(claim => claim.Type == ClaimTypes.UserData).Value;
+        try
+        {
+            var response = await UserClientService.GetUserById(Id);
+
+            if ( response.Success && response.Data != null )
+            {
+                var user = UserMapper.MapToEntity(response.Data.User);
+
+                _request.Id = user.Id;
+                _request.Name = user.Name;
+                _request.Phone = user.Phone;
+                _request.LastName = user.LastName;
+            }
+        }
+        catch ( Exception ex )
+        {
+            NavigationManager.NavigateTo(Routes.User.UserList);
+            await Sweet.FireAsync(new SweetAlertOptions
+                {
+                    Icon = "error",
+                    Text = ex.Message
+                });
+        }
+    }
+
+    private async Task OnEnableChagePasssword()
+    {
+        var result = await Sweet.FireAsync(new SweetAlertOptions
+            {
+                Title = "¿Está seguro?",
+                Icon = SweetAlertIcon.Warning,
+                ShowCancelButton = true,
+                ConfirmButtonText = "Si, quiero cambiarla",
+                CancelButtonText = "No, no hacer nada"
+            });
+
+        if ( result.IsConfirmed )
+            EnablePasswordChange = true;
+    }
+
+    private async Task OnValidSubmitHandler()
+    {
+        try
+        {
+            var response = await UserClientService.UpdateUser(_request);
+
+            var toast = Sweet.Mixin(new SweetAlertOptions
+                {
+                    Toast = true,
+                    TimerProgressBar = true,
+                    Position = "top-end",
+                    ShowConfirmButton = false,
+                    Timer = 3000,
+                });
+
+            if ( response.Success )
+            {
+                NavigationManager.NavigateTo(Routes.Customer.Index);
+                await toast.FireAsync(new SweetAlertOptions
+                    {
+                        Icon = "success",
+                        Title = response.Message
+                    });
+            }
+            else
+            {
+                await toast.FireAsync(new SweetAlertOptions
+                    {
+                        Icon = "error",
+                        Title = response.Message
+                    });
+            }
+        }
+        catch ( Exception ex )
+        {
+            await Sweet.FireAsync(new SweetAlertOptions
+                {
+                    Icon = "error",
+                    Text = "Algo ha salido mal, por favor intentelo de nuevo"
+                });
+        }
+    }
+
+
+
+}

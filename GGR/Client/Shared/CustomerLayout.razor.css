@@ -1,0 +1,11 @@
+﻿.page-customer {
+  height: 100vh;
+  overflow: hidden;
+  background-image: linear-gradient(to right, #fad0c4 0%, #ffd1ff 100%);
+  font-family: 'Montserrat', sans-serif;
+}
+
+.content-customer-container {
+  width: min(90%, 1000px);
+  margin: 0 auto;
+}

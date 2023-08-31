@@ -89,4 +89,38 @@ public class SaleTicketClientService : ISaleTicketClientService
             throw new Exception($"{ex.Message}");
         }
     }
+
+    public async Task<ServiceResponse<RegisterTicketResponse>> RegisterTicket(RegisterTicketRequest request)
+    {
+        _logger.LogInformation("Register ticket {TicketFolio} for customer {CustomerId}", request.Folio, request.UserId);
+
+        try
+        {
+            var token = await _localStorageService.GetItemAsync<string>("token");
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, "api/SaleTicket/register-ticket");
+            requestMessage.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            requestMessage.Content = JsonContent.Create(request);
+
+            var response = await _httpClient.SendAsync(requestMessage);
+
+            if ( response.StatusCode == System.Net.HttpStatusCode.Unauthorized )
+                _navigationManager.NavigateTo(Routes.User.LoginPageSesionExpired);
+
+            var content = await response.Content.ReadFromJsonAsync<ServiceResponse<RegisterTicketResponse>>();
+
+            if ( content != null )
+            {
+                return content;
+            }
+            else
+            {
+                throw new Exception("Content for fetching total tickets counts is null");
+            }
+
+        }
+        catch ( Exception ex )
+        {
+            throw new Exception($"{ex.Message}");
+        }
+    }
 }

@@ -1,0 +1,51 @@
+﻿@using GGR.Client;
+@using System.Security.Claims;
+
+@inject NavigationManager NavigationManager;
+@inject ILocalStorageService LocalStorageService;
+@inject AuthenticationStateProvider AuthStateProvider;
+@inject SweetAlertService Sweet;
+
+<div>
+    <nav class="navbar">
+        <div>
+            <NavLink class="text-decoration-none text-black" href="@Routes.Customer.Index" Match="NavLinkMatch.All">
+                <span>GGR</span>
+            </NavLink>
+        </div>
+
+        <div style="display: flex; gap: 50px; align-items: center;">
+            <NavLink class="text-decoration-none text-black" href="@Routes.Customer.Profile" Match="NavLinkMatch.All">
+                Perfil
+            </NavLink>
+
+            <NavLink class="text-decoration-none text-black" href="@Routes.Customer.ClaimedRewards" Match="NavLinkMatch.All">
+                Recompensas reclamadas
+            </NavLink>
+
+            <button @onclick="Logout" class="rounded px-3 py-1 text-white text-decoration-none border-0" style="background: #7A5EEA;" href="@Routes.Reward.RewardsList" Match="NavLinkMatch.All">
+                Cerrar sesión
+            </button>
+        </div>
+    </nav>
+</div>
+
+@code {
+    private async Task Logout()
+    {
+        var result = await Sweet.FireAsync(new SweetAlertOptions
+            {
+                Title = "¿Esta seguro de que desea cerrar sesión?",
+                Icon = SweetAlertIcon.Warning,
+                ShowCancelButton = true,
+                ConfirmButtonText = "Cerrar sesión",
+                CancelButtonText = "No, permanecer en la pagina"
+            });
+
+        if ( result.IsConfirmed )
+        {
+            await LocalStorageService.RemoveItemAsync("token");
+            await AuthStateProvider.GetAuthenticationStateAsync();
+        }
+    }
+}

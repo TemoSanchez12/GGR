@@ -13,4 +13,6 @@ public interface IUserClientService
     Task<ServiceResponse<UserRegisterResponse>> RegisterUser(UserRegisterRequest request);
     Task<ServiceResponse<GetTotalUsersResponse>> GetTotalUsers();
     Task<ServiceResponse<GetTotalPointsResponse>> GetTotalPoints();
+    Task<ServiceResponse<GetUserResponse>> GetUserById(string id);
+    Task<ServiceResponse<GetUserResponse>> UpdateUser(UpdateUserRequest request);
 }

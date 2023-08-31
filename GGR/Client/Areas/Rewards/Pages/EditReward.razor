@@ -75,7 +75,7 @@
                 _reward.Description = reward.Description;
                 _reward.PricePoints = reward.PricePoints;
                 _reward.UnitsAvailable = reward.UnitsAvailable;
-                _reward.IsActive = reward.Status == Models.RewardStatus.Available 
+                _reward.IsActive = reward.Status == Models.RewardStatus.Available
                     ? true : false;
             }
         }
@@ -91,7 +91,7 @@
         }
     }
 
-    private async void OnValidSubmitHandler()
+    private async Task OnValidSubmitHandler()
     {
         try
         {

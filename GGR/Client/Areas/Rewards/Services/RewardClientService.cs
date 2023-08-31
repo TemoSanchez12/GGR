@@ -32,7 +32,7 @@ public class RewardClientService : IRewardClientService
         var response = await _httpClient.GetAsync("api/Reward/get-all");
         var content = await response.Content.ReadFromJsonAsync<ServiceResponse<GetAllRewardsReponse>>();
 
-        if (content != null)
+        if ( content != null )
         {
             return content;
         }
@@ -49,7 +49,7 @@ public class RewardClientService : IRewardClientService
         var response = await _httpClient.GetAsync($"api/Reward/get/{rewardId}");
         var content = await response.Content.ReadFromJsonAsync<ServiceResponse<GetRewardResponse>>();
 
-        if (content != null)
+        if ( content != null )
         {
             return content;
         }
@@ -70,12 +70,12 @@ public class RewardClientService : IRewardClientService
 
         var response = await _httpClient.SendAsync(requestMessaage);
 
-        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        if ( response.StatusCode == System.Net.HttpStatusCode.Unauthorized )
             _navigationManager.NavigateTo(Routes.User.LoginPageSesionExpired);
 
         var content = await response.Content.ReadFromJsonAsync<ServiceResponse<CreateRewardResponse>>();
 
-        if (content != null)
+        if ( content != null )
         {
             return content;
         }
@@ -101,12 +101,12 @@ public class RewardClientService : IRewardClientService
 
         var response = await _httpClient.SendAsync(requestMessaage);
 
-        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        if ( response.StatusCode == System.Net.HttpStatusCode.Unauthorized )
             _navigationManager.NavigateTo(Routes.User.LoginPageSesionExpired);
 
         var content = await response.Content.ReadFromJsonAsync<ServiceResponse<UpdateRewardResponse>>();
 
-        if (content != null)
+        if ( content != null )
         {
             return content;
         }
@@ -128,15 +128,13 @@ public class RewardClientService : IRewardClientService
         {
             var response = await _httpClient.SendAsync(requestMessaage);
 
-            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            if ( response.StatusCode == System.Net.HttpStatusCode.Unauthorized )
                 _navigationManager.NavigateTo(Routes.User.LoginPageSesionExpired);
         }
-        catch (Exception ex)
+        catch ( Exception ex )
         {
             _logger.LogError(ex.Message);
             throw new Exception("Something went wrong while deleting the reward");
         }
-
-
     }
 }

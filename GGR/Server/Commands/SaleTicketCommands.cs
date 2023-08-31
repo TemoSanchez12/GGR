@@ -22,20 +22,20 @@ public class SaleTicketCommands : ISaleTicketCommands
 
     public async Task<SaleTicket> RegisterTicket(RegisterTicketRequest request)
     {
-        _logger.LogInformation("Registering ticket for user {UserEmail}", request.UserEmail);
+        _logger.LogInformation("Registering ticket for user {UserID}", request.UserId);
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
 
-        if ( string.IsNullOrEmpty(request.UserEmail) )
-            throw new Exception(SaleTicketsError.EmailIsNullOrEmpty.ToString());
+        if ( string.IsNullOrEmpty(request.UserId) )
+            throw new Exception(SaleTicketsError.IdIsNullOrEmpty.ToString());
 
         if ( string.IsNullOrEmpty(request.Folio) )
             throw new Exception(SaleTicketsError.FolioIsNullOrEmpty.ToString());
 
-        var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == request.UserEmail);
+        var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == Guid.Parse(request.UserId));
         var registration = await dbContext.Registrations.FirstOrDefaultAsync(registration => registration.User == user);
 
         if ( user == null )
-            throw new Exception(SaleTicketsError.UserNotFoundWithEmail.ToString());
+            throw new Exception(SaleTicketsError.UserNotFoundWithId.ToString());
 
         if ( await dbContext.SaleTickets.AnyAsync(ticket => ticket.Folio == request.Folio) )
             throw new Exception(SaleTicketsError.FolioAlreadyRegistered.ToString());

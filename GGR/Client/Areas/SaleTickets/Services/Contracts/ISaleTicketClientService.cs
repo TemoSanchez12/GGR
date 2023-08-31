@@ -7,4 +7,5 @@ public interface ISaleTicketClientService
 {
     Task<ServiceResponse<GetSaleTicketsResponse>> GetSaleTicketsByUserEmail(string email);
     Task<ServiceResponse<GetTotalTicketsCount>> GetTotalTicketsCount();
+    Task<ServiceResponse<RegisterTicketResponse>> RegisterTicket(RegisterTicketRequest request);
 }

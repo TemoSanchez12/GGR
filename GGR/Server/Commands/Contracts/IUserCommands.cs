@@ -14,4 +14,6 @@ public interface IUserCommands
     Task RestoreVerifyToken(UserRestoreVerifyTokenRequest request);
     Task<int> GetTotalUsers();
     Task<int> GetTotalPoints();
+    Task<User> GetUserById(Guid id);
+    Task<User> UpdateUser(UpdateUserRequest request);
 }

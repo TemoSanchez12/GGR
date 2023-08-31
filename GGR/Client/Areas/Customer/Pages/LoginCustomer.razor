@@ -3,26 +3,36 @@
 @using GGR.Client;
 @using System.Web;
 
-@layout LoginLayoutAdmin
-@attribute [Route(Routes.User.LoginPage)]
+@layout CustomerLayout
 
-<h3 class="mb-5 mx-auto mt-4 text-center">Iniciar Sesión</h3>
+@attribute [Route(Routes.Customer.LoginCustomer)]
 
-<EditForm Model="loginRequest" OnValidSubmit="HandleValidSubmit" class="col-6 p-3 rounded-1 border border-secondary-subtle mx-auto">
-    <div class="mb-3">
-        <label for="email" class="form-label">Correo Electronico</label>
-        <InputText @bind-Value="loginRequest.Email" class="form-control" />
+<div class="modal-form-container">
+    <p class="modal-form-welcome">Bienvenido de nuevo</p>
+    <div>
+        <p>GGR</p>
     </div>
 
-    <div class="mb-3">
-        <label for="password" class="form-label">Contraseña</label>
-        <InputText @bind-Value="loginRequest.Password" type="password" class="form-control" />
+    <EditForm class="form-customer" Model="@loginRequest" OnValidSubmit="@HandleValidSubmit" style="margin: 30px 0; width: 90%;">
+        <div class="form-customer-control">
+            <label for="email" class="form-customer-label">Correo electronico</label>
+            <InputText @bind-Value="loginRequest.Email" class="form-control" style="width: 100%;" />
+        </div>
+
+        <div class="form-customer-control">
+            <label for="password" class="form-customer-label">Contraseña</label>
+            <InputText @bind-Value="loginRequest.Password" type="password" class="form-control" />
+        </div>
+
+        <button type="submit" class="form-customer-submit-button">Iniciar sesión</button>
+    </EditForm>
+
+    <div class="form-customer-links">
+        <a href="">¿Olvidaste tu contraseña?</a>
+        <a href="">Registrarse</a>
     </div>
+</div>
 
-    <button type="submit" class="btn btn-success">Iniciar Sesión</button>
-
-    <a href="@Routes.User.CreateUser" class="text-primary m-lg-5">¿No tienes cuenta? Crea una</a>
-</EditForm>
 
 @code {
     private UserLoginRequest loginRequest = new();
@@ -30,7 +40,7 @@
     [Parameter] public string? SessionExpired { get; set; }
     [Inject] private IUserClientService UserClientService { get; set; } = null!;
     [Inject] private SweetAlertService Sweet { get; set; } = null!;
-    [Inject] private ILogger<LoginAdmin> Logger { get; set; } = null!;
+    [Inject] private ILogger<LoginCustomer> Logger { get; set; } = null!;
     [Inject] private NavigationManager NavigationManager { get; set; } = null!;
 
     protected override async Task OnInitializedAsync()
@@ -68,7 +78,7 @@
 
             if ( response.Success )
             {
-                NavigationManager.NavigateTo(Routes.Dashboard);
+                NavigationManager.NavigateTo(Routes.Customer.Index);
                 await toast.FireAsync(new SweetAlertOptions
                     {
                         Icon = "success",

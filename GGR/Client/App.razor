@@ -9,11 +9,11 @@
                     @{
                         if ( !context.User.Identity!.IsAuthenticated || !context.User.HasClaim("userType", "Client") )
                         {
-                            NavigationManager.NavigateTo(Routes.User.LoginPage);
+                            NavigationManager.NavigateTo(Routes.Customer.LoginCustomer);
                         }
                         else
                         {
-                            NavigationManager.NavigateTo(Routes.Home);
+                            NavigationManager.NavigateTo(Routes.Dashboard);
                         }
                     }
                 </NotAuthorized>

@@ -13,5 +13,6 @@ public enum UserError
     EmailIsNullWhenSearching,
     NotUsersFoundByEmail,
     ErrorSendingVerifycationEmail,
-    UserAlreadyVerified
+    UserAlreadyVerified,
+    PasswordsDoesNotMatch
 }

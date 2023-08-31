@@ -1,0 +1,18 @@
+﻿@inherits LayoutComponentBase
+
+<div class="page-customer">
+    <div class="content-customer-container">
+
+      <AuthorizeView>
+        <Authorized>
+          <div>
+              <NavMenuCustomer />
+          </div>
+        </Authorized>
+      </AuthorizeView>
+
+        <div>
+            @Body
+        </div>
+    </div>
+</div>
