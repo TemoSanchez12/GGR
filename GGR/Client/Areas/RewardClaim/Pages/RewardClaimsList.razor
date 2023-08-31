@@ -87,6 +87,18 @@ else
 
     private async Task HandleClaimReward(string rewardClaimId, string userEmail)
     {
+        var result = await Sweet.FireAsync(new SweetAlertOptions
+            {
+                Title = "¿Esta seguro de que desea marcar esta recompensa como reclamada?",
+                Icon = SweetAlertIcon.Warning,
+                ShowCancelButton = true,
+                ConfirmButtonText = "Si, marcar como reclamda",
+                CancelButtonText = "No, no hacer nada"
+            });
+
+        if ( !result.IsConfirmed )
+            return;
+
         var toast = Sweet.Mixin(new SweetAlertOptions
             {
                 Toast = true,
@@ -117,6 +129,8 @@ else
             }
             else
             {
+                await LoadRewardClaims(string.IsNullOrEmpty(filter.Email) ? null : filter.Email);
+                StateHasChanged();
                 await toast.FireAsync(new SweetAlertOptions
                     {
                         Icon = "success",

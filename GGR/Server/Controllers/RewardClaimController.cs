@@ -137,7 +137,7 @@ public class RewardClaimController : ControllerBase
         {
             var rewardClaim = await _rewardClaimCommands.UpdateRewardClaimStatus(request);
             response.Success = true;
-            response.Message = _successUpdateRewardClaimStatusMessage;
+            response.Message = _successUpdateRewardClaimStatusMessage + " aqui mero";
             response.Data = new UpdateRewardClaimStatusResponse { RewardClaim = rewardClaim.ToDefinition() };
             return Ok(response);
         }
@@ -166,7 +166,7 @@ public class RewardClaimController : ControllerBase
         var response = new ServiceResponse<UpdateRewardClaimStatusResponse>();
         try
         {
-            var rewardClaim = await _rewardClaimCommands.UpdateRewardClaimStatus(request);
+            var rewardClaim = await _rewardClaimCommands.UpdateRewardClaimStatusAdmin(request);
             response.Success = true;
             response.Message = _successUpdateRewardClaimStatusMessage;
             response.Data = new UpdateRewardClaimStatusResponse { RewardClaim = rewardClaim.ToDefinition() };

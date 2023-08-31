@@ -25,7 +25,8 @@ public class RewardClaimCommands : IRewardClaimCommands
     public async Task<List<RewardClaim>> GetAllRewardClaims()
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
-        return dbContext.RewardClaims.Include(r => r.User).Include(r => r.Reward).ToList();
+        return dbContext.RewardClaims.Include(r => r.User).Include(r => r.Reward).Take(15)
+            .Where(r => r.RewardClaimStatus == RewardClaimStatus.Unclaimed).ToList();
     }
 
     public async Task<List<RewardClaim>> GetRewardClaimsByUserEmail(string? email)
@@ -147,7 +148,7 @@ public class RewardClaimCommands : IRewardClaimCommands
             request.RewardClaimId, request.NewStatus);
 
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
-        var rewardClaim = await dbContext.RewardClaims.FirstOrDefaultAsync();
+        var rewardClaim = await dbContext.RewardClaims.FirstOrDefaultAsync(r => r.Id == Guid.Parse(request.RewardClaimId));
 
         if ( rewardClaim == null )
             throw new Exception(RewardClaimError.RewardClaimNotFound.ToString());
@@ -164,6 +165,7 @@ public class RewardClaimCommands : IRewardClaimCommands
 
         try
         {
+            _logger.LogInformation("Saving new reward claim status for {IdRewardClaims}", rewardClaim.Id);
             await dbContext.SaveChangesAsync();
         }
         catch ( Exception ex )

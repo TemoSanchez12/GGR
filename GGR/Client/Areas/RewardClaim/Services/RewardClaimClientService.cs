@@ -55,7 +55,7 @@ public class RewardClaimClientService : IRewardClaimClientService
         _logger.LogInformation("Updating reward claim status");
 
         var token = await _localStorageService.GetItemAsync<string>("token");
-        var requestMessage = new HttpRequestMessage(HttpMethod.Put, "api/RewardClaim/update-reward-claim-status");
+        var requestMessage = new HttpRequestMessage(HttpMethod.Put, "api/RewardClaim/update-reward-claim-status-admin");
         requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         requestMessage.Content = JsonContent.Create(request);
 
