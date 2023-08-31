@@ -1,6 +1,7 @@
 ﻿using GGR.Client.Areas.RewardClaim.Services.Contracts;
 using GGR.Shared;
 using GGR.Shared.RewardClaim;
+using GGR.Shared.User;
 using Microsoft.AspNetCore.Components;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -34,12 +35,12 @@ public class RewardClaimClientService : IRewardClaimClientService
         requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
         var response = await _httpClient.SendAsync(requestMessage);
-        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        if ( response.StatusCode == System.Net.HttpStatusCode.Unauthorized )
             _navigationManager.NavigateTo(Routes.User.LoginPageSesionExpired);
 
         var content = await response.Content.ReadFromJsonAsync<ServiceResponse<GetAllRewardClaimsResponse>>();
 
-        if (content != null)
+        if ( content != null )
         {
             return content;
         }
@@ -59,12 +60,12 @@ public class RewardClaimClientService : IRewardClaimClientService
         requestMessage.Content = JsonContent.Create(request);
 
         var response = await _httpClient.SendAsync(requestMessage);
-        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        if ( response.StatusCode == System.Net.HttpStatusCode.Unauthorized )
             _navigationManager.NavigateTo(Routes.User.LoginPageSesionExpired);
 
         var content = await response.Content.ReadFromJsonAsync<ServiceResponse<UpdateRewardClaimStatusResponse>>();
 
-        if (content != null)
+        if ( content != null )
         {
             return content;
         }
@@ -83,18 +84,73 @@ public class RewardClaimClientService : IRewardClaimClientService
         requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
         var response = await _httpClient.SendAsync(requestMessage);
-        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        if ( response.StatusCode == System.Net.HttpStatusCode.Unauthorized )
             _navigationManager.NavigateTo(Routes.User.LoginPageSesionExpired);
 
         var content = await response.Content.ReadFromJsonAsync<ServiceResponse<GetAllRewardClaimsResponse>>();
 
-        if (content != null)
+        if ( content != null )
         {
             return content;
         }
         else
         {
             throw new Exception("Content for fetching all reward claims is null");
+        }
+    }
+
+    public async Task<ServiceResponse<GetAllRewardClaimsResponse>> GetRewardClaimsById(string id)
+    {
+        _logger.LogInformation("Fetching all reward claims");
+
+        var token = await _localStorageService.GetItemAsync<string>("token");
+        var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"api/RewardClaim/get-reward-claims-by-id/{id}");
+        requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await _httpClient.SendAsync(requestMessage);
+        if ( response.StatusCode == System.Net.HttpStatusCode.Unauthorized )
+            _navigationManager.NavigateTo(Routes.User.LoginPageSesionExpired);
+
+        var content = await response.Content.ReadFromJsonAsync<ServiceResponse<GetAllRewardClaimsResponse>>();
+
+        if ( content != null )
+        {
+            return content;
+        }
+        else
+        {
+            throw new Exception("Content for fetching all reward claims is null");
+        }
+    }
+
+    public async Task<ServiceResponse<CreateRewardClaimResponse>> CreateRewardClaim(CreateRewardClaimRequest request)
+    {
+        _logger.LogInformation("Creating reward claim for customer {CustomerId} for reward {RewardId}", request.UserId, request.RewardId);
+
+        var token = await _localStorageService.GetItemAsync<string>("token");
+        var requestMessage = new HttpRequestMessage(HttpMethod.Post, "/api/RewardClaim/create-reward-claim");
+        requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        requestMessage.Content = JsonContent.Create(request);
+
+        try
+        {
+            var response = await _httpClient.SendAsync(requestMessage);
+            var content = await response.Content.ReadFromJsonAsync<ServiceResponse<CreateRewardClaimResponse>>();
+
+            if ( content != null )
+            {
+                return content;
+            }
+            else
+            {
+                throw new Exception();
+            }
+        }
+        catch ( Exception ex )
+        {
+            _logger.LogError(ex, "Something went wrong while creating reward claim");
+            _navigationManager.NavigateTo(Routes.Customer.LoginCustomerSessionExpired);
+            return new ServiceResponse<CreateRewardClaimResponse>();
         }
     }
 }

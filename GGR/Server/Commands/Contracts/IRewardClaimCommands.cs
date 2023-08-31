@@ -7,6 +7,7 @@ public interface IRewardClaimCommands
 {
     Task<List<RewardClaim>> GetAllRewardClaims();
     Task<List<RewardClaim>> GetRewardClaimsByUserEmail(string? email);
+    Task<List<RewardClaim>> GetRewardClaimsById(string id);
     Task<RewardClaim> CreateRewardClaim(CreateRewardClaimRequest request);
     Task<RewardClaim> UpdateRewardClaimStatus(UpdateRewardClaimStatusRequest request);
     Task<RewardClaim> UpdateRewardClaimStatusAdmin(UpdateRewardClaimStatusRequest request);

@@ -71,6 +71,29 @@ public class RewardClaimController : ControllerBase
         }
     }
 
+    [HttpGet("get-reward-claims-by-id/{id}")]
+    [Authorize]
+    public async Task<ActionResult<ServiceResponse<GetAllRewardClaimsResponse>>> GetRewardClaimsById(string id)
+    {
+        var response = new ServiceResponse<GetAllRewardClaimsResponse>();
+
+        try
+        {
+            var rewardClaims = await _rewardClaimCommands.GetRewardClaimsById(id);
+            response.Success = true;
+            response.Message = _successGetRewardClaimsMessage;
+            response.Data = new GetAllRewardClaimsResponse { RewardClaims = rewardClaims.Select(r => r.ToDefinition()).ToList() };
+            return Ok(response);
+        }
+        catch ( Exception ex )
+        {
+            _logger.LogError("Error while creating reward claim: {ErrorMessage}", ex.Message);
+            response.Success = false;
+            response.Message = _genericErrorMessage;
+            return BadRequest(response);
+        }
+    }
+
     [HttpPost("create-reward-claim")]
     [Authorize]
     public async Task<ActionResult<ServiceResponse<CreateRewardClaimResponse>>> CreateRewardClaim(CreateRewardClaimRequest request)

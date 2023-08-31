@@ -38,13 +38,14 @@
             {
                 <tr>
                     <td scope="row">@rewardClaim.UserEmail</td>
-                    <td>@rewardClaim.RewardName</td>
+                    <td>@rewardClaim.Reward.Name</td>
                     <td>@rewardClaim.RewardClaimStatus</td>
                     <td>@rewardClaim.ClaimCreated</td>
 
                     <td>
-                        @if (rewardClaim.RewardClaimStatus != GGR.Client.Areas.RewardClaim.Models.RewardClaimStatus.Claimed) {
-                            <button class="btn btn-primary btn-sm" @onclick="(async () => await HandleClaimReward(rewardClaim.Id.ToString(), rewardClaim.UserEmail))">
+                        @if ( rewardClaim.RewardClaimStatus != GGR.Client.Areas.RewardClaim.Models.RewardClaimStatus.Claimed )
+                        {
+                            <button class="btn btn-primary btn-sm border-0" @onclick="(async () => await HandleClaimReward(rewardClaim.Id.ToString(), rewardClaim.UserEmail))">
                                 Cambiar estado a reclamada
                             </button>
                         }
@@ -84,7 +85,8 @@ else
         await LoadRewardClaims(null);
     }
 
-    private async Task HandleClaimReward(string rewardClaimId, string userEmail) {
+    private async Task HandleClaimReward(string rewardClaimId, string userEmail)
+    {
         var toast = Sweet.Mixin(new SweetAlertOptions
             {
                 Toast = true,
@@ -97,11 +99,11 @@ else
         try
         {
             var request = new UpdateRewardClaimStatusRequest
-            {
-                RewardClaimId = rewardClaimId,
-                NewStatus = GGR.Shared.RewardClaim.Definitions.RewardClaimStatusDefinition.Claimed,
-                UserEmail = userEmail
-            };
+                {
+                    RewardClaimId = rewardClaimId,
+                    NewStatus = GGR.Shared.RewardClaim.Definitions.RewardClaimStatusDefinition.Claimed,
+                    UserEmail = userEmail
+                };
 
             var response = await RewardClaimClientService.UpdateRewardClaimStatus(request);
 

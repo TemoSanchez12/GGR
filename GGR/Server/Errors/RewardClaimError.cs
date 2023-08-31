@@ -8,5 +8,7 @@ public enum RewardClaimError
     NotEnoughPoints,
     ErrorSavingData,
     RewardClaimNotFound,
-    NoAllowToAssignStatus
+    NoAllowToAssignStatus,
+    IdIsNullOrEmpty,
+
 }

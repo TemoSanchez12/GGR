@@ -10,4 +10,5 @@ public class RewardClaimErrorMessage
     public static string ErrorSavingData = "Ha ocurrido un error al guardar la información";
     public static string RewardClaimNotFound = "No se ha encontrado el reclamo de la recompensa";
     public static string NoAllowToAssignStatus = "No tiene permiso para cambiar el estado";
+    public static string IdIsNullOrEmpty = "No se ha proporcionado un id";
 }

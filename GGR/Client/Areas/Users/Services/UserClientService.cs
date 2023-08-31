@@ -186,6 +186,7 @@ public class UserClientService : IUserClientService
         }
         catch ( Exception ex )
         {
+            _logger.LogError(ex, "Something went wrong while fetching user by id");
             _navigationManager.NavigateTo(Routes.Customer.LoginCustomerSessionExpired);
             return new ServiceResponse<GetUserResponse>();
         }

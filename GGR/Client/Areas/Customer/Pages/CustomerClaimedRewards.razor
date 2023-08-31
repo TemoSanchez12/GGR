@@ -1,5 +1,124 @@
-﻿<h3>CustomerClaimedRewards</h3>
+﻿@layout CustomerLayout
+
+@using GGR.Client.Areas.Customer.Components;
+@using System.Security.Claims;
+@using GGR.Client.Areas.RewardClaim.Services.Contracts;
+@using GGR.Client.Areas.RewardClaim.Models;
+@using GGR.Client.Areas.RewardClaim.Utils;
+
+@inject SweetAlertService Sweet;
+@inject NavigationManager NavigationManager;
+@inject AuthenticationStateProvider AuthStateProvider;
+@inject IRewardClaimClientService RewardClaimClientService;
+
+@attribute [Authorize(Roles = "Admin, Editor, Client")]
+@attribute [Route(Routes.Customer.ClaimedRewards)]
+
+<section class="d-flex justify-content-between" style="margin-top: 80px;">
+
+    @if ( RewardClaims.Any() )
+    {
+        <ul style="width: min(90%, 500px);" class="p-0">
+            @foreach ( var rewardClaim in RewardClaims )
+            {
+                <li style="list-style: none; margin-bottom: 40px;">
+                    <div style="background: #FFF8E7; border-radius: 10px; overflow: hidden; display: flex; height: 170px;">
+
+                        <img src="https://photos5.appleinsider.com/gallery/product_pages/266-hero.jpg" alt="@rewardClaim" style="height: 100%; aspect-ratio: 1/1; object-fit: cover;" />
+
+                        <div class="p-2 d-flex flex-column justify-content-between">
+
+                            <div>
+                                <h3 style="font-weight: 500; font-size: 18px;">@rewardClaim.Reward.Name</h3>
+                                <div style="width: 100%; height: 4px; border-radius: 5px; background: #7A5EEA;"></div>
+                                <p style="font-size: 14px;">@rewardClaim.Reward.Description</p>
+                            </div>
+
+                            <div>
+                                <p class="m-0">Puntos requeridos: <span style="font-weight: 600;">@rewardClaim.Reward.PricePoints</span></p>
+                                <div style="display: flex; justify-content: space-between;">
+                                    @if ( rewardClaim.RewardClaimStatus == RewardClaimStatus.Unclaimed )
+                                    {
+                                        <p class="m-0 rounded" style="background: #32B065; color: #FFF8E7; padding: 4px 8px; font-size: 12px;">No reclamado</p>
+
+                                    }
+                                    else if ( rewardClaim.RewardClaimStatus == RewardClaimStatus.Claimed )
+                                    {
+                                        <p class="m-0 rounded" style="background: #9ab8f7; color: #FFF8E7; padding: 4px 8px; font-size: 12px;">Reclamado</p>
+                                    }
+                                    else
+                                    {
+                                        <p class="m-0 rounded" style="background: #F47174; color: #FFF8E7; padding: 4px 8px; font-size: 12px;">Cancelado</p>
+                                    }
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            }
+        </ul>
+    }
+    else if ( !RewardClaims.Any() && loadingRewardClaims )
+    {
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <div class="spinner-border" role="status">
+            </div>
+            <span class="sr-only">Cargando recompensas...</span>
+        </div>
+    }
+    else
+    {
+        <p style="background: #FFF8E7; border-radius: 10px; font-weight: 600;" class="px-3 py-2">
+            Aún no tienes recompensas
+        </p>
+
+    }
+</section>
 
 @code {
+    private List<RewardClaim> RewardClaims = new List<RewardClaim>();
+    private string Id { get; set; } = string.Empty;
 
+    private bool loadingRewardClaims = false;
+    public bool Open = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var claims = authState.User.Claims;
+        Id = claims.First(claim => claim.Type == ClaimTypes.UserData).Value;
+
+        loadingRewardClaims = true;
+        await LoadRewardClaims();
+        loadingRewardClaims = false;
+    }
+
+    private async Task LoadRewardClaims()
+    {
+        var response = await RewardClaimClientService.GetRewardClaimsById(Id);
+
+        if ( response.Data == null )
+        {
+            var toast = Sweet.Mixin(new SweetAlertOptions
+                {
+                    Toast = true,
+                    TimerProgressBar = true,
+                    Position = "top-end",
+                    ShowConfirmButton = false,
+                    Timer = 3000,
+                });
+
+            await toast.FireAsync(new SweetAlertOptions
+                {
+                    Icon = "error",
+                    Title = response.Message
+                });
+        }
+        else
+        {
+            RewardClaims = response.Data.RewardClaims
+              .Select(rewardClaim => RewardClaimMapper.MapToEntity(rewardClaim)).ToList();
+        }
+    }
 }

@@ -1,5 +1,6 @@
 ﻿using GGR.Client.Areas.RewardClaim.Models;
 using GGR.Shared.RewardClaim.Definitions;
+using GGR.Client.Areas.Rewards.Utils;
 
 namespace GGR.Client.Areas.RewardClaim.Utils;
 
@@ -19,9 +20,8 @@ public static class RewardClaimMapper
         {
             Id = definition.Id,
             UserId = definition.UserId,
-            RewardName = definition.RewardName,
             UserEmail = definition.UserEmail,
-            RewardId = definition.RewardId,
+            Reward = RewardMapper.MapToEntity(definition.Reward),
             RewardClaimStatus = rewardClaimStatus,
             ClaimCreated = definition.ClaimCreated,
             ClaimUpdated = definition.ClaimUpdated,
