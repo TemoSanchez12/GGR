@@ -1,6 +1,7 @@
 ﻿using GGR.Client.Areas.Rewards.Services.Contracts;
 using GGR.Shared;
 using GGR.Shared.Reward;
+using GGR.Shared.SaleTicket;
 using Microsoft.AspNetCore.Components;
 using System.Net.Http.Json;
 
@@ -64,24 +65,29 @@ public class RewardClientService : IRewardClientService
         _logger.LogInformation("Sending request to create reward for email admin {EmailAdmin}", "email.admin");
 
         var token = await _localStorageService.GetItemAsync<string>("token");
-        var requestMessaage = new HttpRequestMessage(HttpMethod.Post, "api/Reward/create-reward");
-        requestMessaage.Content = JsonContent.Create(request);
-        requestMessaage.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        var requestMessage = new HttpRequestMessage(HttpMethod.Post, "api/Reward/create-reward");
+        requestMessage.Content = JsonContent.Create(request);
+        requestMessage.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        var response = await _httpClient.SendAsync(requestMessaage);
-
-        if ( response.StatusCode == System.Net.HttpStatusCode.Unauthorized )
-            _navigationManager.NavigateTo(Routes.User.LoginPageSesionExpired);
-
-        var content = await response.Content.ReadFromJsonAsync<ServiceResponse<CreateRewardResponse>>();
-
-        if ( content != null )
+        try
         {
-            return content;
+            var response = await _httpClient.SendAsync(requestMessage);
+            var content = await response.Content.ReadFromJsonAsync<ServiceResponse<CreateRewardResponse>>();
+
+            if ( content != null )
+            {
+                return content;
+            }
+            else
+            {
+                throw new Exception();
+            }
         }
-        else
+        catch ( Exception ex )
         {
-            throw new Exception("Content for create reward is null");
+            _logger.LogError(ex, "Something went wrong while fetching user by id");
+            _navigationManager.NavigateTo(Routes.Customer.LoginCustomerSessionExpired);
+            return new ServiceResponse<CreateRewardResponse>();
         }
     }
 
@@ -90,7 +96,7 @@ public class RewardClientService : IRewardClientService
         _logger.LogInformation("Sending request to create reward for email admin {EmailAdmin}", "email.admin");
 
         var token = await _localStorageService.GetItemAsync<string>("token");
-        var requestMessaage = new HttpRequestMessage(HttpMethod.Put, "api/Reward/update-reward")
+        var requestMessage = new HttpRequestMessage(HttpMethod.Put, "api/Reward/update-reward")
         {
             Content = JsonContent.Create(request),
             Headers =
@@ -99,20 +105,25 @@ public class RewardClientService : IRewardClientService
             }
         };
 
-        var response = await _httpClient.SendAsync(requestMessaage);
-
-        if ( response.StatusCode == System.Net.HttpStatusCode.Unauthorized )
-            _navigationManager.NavigateTo(Routes.User.LoginPageSesionExpired);
-
-        var content = await response.Content.ReadFromJsonAsync<ServiceResponse<UpdateRewardResponse>>();
-
-        if ( content != null )
+        try
         {
-            return content;
+            var response = await _httpClient.SendAsync(requestMessage);
+            var content = await response.Content.ReadFromJsonAsync<ServiceResponse<UpdateRewardResponse>>();
+
+            if ( content != null )
+            {
+                return content;
+            }
+            else
+            {
+                throw new Exception();
+            }
         }
-        else
+        catch ( Exception ex )
         {
-            throw new Exception("Content for update reward is null");
+            _logger.LogError(ex, "Something went wrong while fetching user by id");
+            _navigationManager.NavigateTo(Routes.Customer.LoginCustomerSessionExpired);
+            return new ServiceResponse<UpdateRewardResponse>();
         }
     }
 
@@ -120,21 +131,18 @@ public class RewardClientService : IRewardClientService
     {
         _logger.LogInformation($"Sending request to delete reward with id: {request.RewardId}");
         var token = await _localStorageService.GetItemAsync<string>("token");
-        var requestMessaage = new HttpRequestMessage(HttpMethod.Put, "api/Reward/update-reward");
-        requestMessaage.Content = JsonContent.Create(request);
-        requestMessaage.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        var requestMessage = new HttpRequestMessage(HttpMethod.Put, "api/Reward/update-reward");
+        requestMessage.Content = JsonContent.Create(request);
+        requestMessage.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
         try
         {
-            var response = await _httpClient.SendAsync(requestMessaage);
-
-            if ( response.StatusCode == System.Net.HttpStatusCode.Unauthorized )
-                _navigationManager.NavigateTo(Routes.User.LoginPageSesionExpired);
+            var response = await _httpClient.SendAsync(requestMessage);
         }
         catch ( Exception ex )
         {
-            _logger.LogError(ex.Message);
-            throw new Exception("Something went wrong while deleting the reward");
+            _logger.LogError(ex, "Something went wrong while fetching user by id");
+            _navigationManager.NavigateTo(Routes.Customer.LoginCustomerSessionExpired);
         }
     }
 }

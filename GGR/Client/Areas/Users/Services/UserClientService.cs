@@ -80,21 +80,25 @@ public class UserClientService : IUserClientService
 
         requestMessage.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        var response = await _httpClient.SendAsync(requestMessage);
-
-
-        if ( response.StatusCode == System.Net.HttpStatusCode.Unauthorized )
-            _navigationManager.NavigateTo(Routes.User.LoginPageSesionExpired);
-
-        var content = await response.Content.ReadFromJsonAsync<ServiceResponse<GetUsersResponse>>();
-
-        if ( content != null )
+        try
         {
-            return content;
+            var response = await _httpClient.SendAsync(requestMessage);
+            var content = await response.Content.ReadFromJsonAsync<ServiceResponse<GetUsersResponse>>();
+
+            if ( content != null )
+            {
+                return content;
+            }
+            else
+            {
+                throw new Exception();
+            }
         }
-        else
+        catch ( Exception ex )
         {
-            throw new Exception();
+            _logger.LogError(ex, "Something went wrong while fetching user by id");
+            _navigationManager.NavigateTo(Routes.Customer.LoginCustomerSessionExpired);
+            return new ServiceResponse<GetUsersResponse>();
         }
     }
 
@@ -121,20 +125,25 @@ public class UserClientService : IUserClientService
         var token = await _localStorageService.GetItemAsync<string>("token");
         requestMessage.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        var response = await _httpClient.SendAsync(requestMessage);
-
-        if ( response.StatusCode == System.Net.HttpStatusCode.Unauthorized )
-            _navigationManager.NavigateTo(Routes.User.LoginPageSesionExpired);
-
-        var content = await response.Content.ReadFromJsonAsync<ServiceResponse<GetTotalUsersResponse>>();
-
-        if ( content != null )
+        try
         {
-            return content;
+            var response = await _httpClient.SendAsync(requestMessage);
+            var content = await response.Content.ReadFromJsonAsync<ServiceResponse<GetTotalUsersResponse>>();
+
+            if ( content != null )
+            {
+                return content;
+            }
+            else
+            {
+                throw new Exception();
+            }
         }
-        else
+        catch ( Exception ex )
         {
-            throw new Exception();
+            _logger.LogError(ex, "Something went wrong while fetching user by id");
+            _navigationManager.NavigateTo(Routes.Customer.LoginCustomerSessionExpired);
+            return new ServiceResponse<GetTotalUsersResponse>();
         }
 
     }
@@ -146,20 +155,25 @@ public class UserClientService : IUserClientService
         var token = await _localStorageService.GetItemAsync<string>("token");
         requestMessage.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        var response = await _httpClient.SendAsync(requestMessage);
-
-        if ( response.StatusCode == System.Net.HttpStatusCode.Unauthorized )
-            _navigationManager.NavigateTo(Routes.User.LoginPageSesionExpired);
-
-        var content = await response.Content.ReadFromJsonAsync<ServiceResponse<GetTotalPointsResponse>>();
-
-        if ( content != null )
+        try
         {
-            return content;
+            var response = await _httpClient.SendAsync(requestMessage);
+            var content = await response.Content.ReadFromJsonAsync<ServiceResponse<GetTotalPointsResponse>>();
+
+            if ( content != null )
+            {
+                return content;
+            }
+            else
+            {
+                throw new Exception();
+            }
         }
-        else
+        catch ( Exception ex )
         {
-            throw new Exception();
+            _logger.LogError(ex, "Something went wrong while fetching user by id");
+            _navigationManager.NavigateTo(Routes.Customer.LoginCustomerSessionExpired);
+            return new ServiceResponse<GetTotalPointsResponse>();
         }
     }
 
@@ -200,20 +214,25 @@ public class UserClientService : IUserClientService
         requestMessage.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         requestMessage.Content = JsonContent.Create(request);
 
-        var response = await _httpClient.SendAsync(requestMessage);
-
-        if ( response.StatusCode == System.Net.HttpStatusCode.Unauthorized )
-            _navigationManager.NavigateTo(Routes.User.LoginPageSesionExpired);
-
-        var content = await response.Content.ReadFromJsonAsync<ServiceResponse<GetUserResponse>>();
-
-        if ( content != null )
+        try
         {
-            return content;
+            var response = await _httpClient.SendAsync(requestMessage);
+            var content = await response.Content.ReadFromJsonAsync<ServiceResponse<GetUserResponse>>();
+
+            if ( content != null )
+            {
+                return content;
+            }
+            else
+            {
+                throw new Exception();
+            }
         }
-        else
+        catch ( Exception ex )
         {
-            throw new Exception();
+            _logger.LogError(ex, "Something went wrong while fetching user by id");
+            _navigationManager.NavigateTo(Routes.Customer.LoginCustomerSessionExpired);
+            return new ServiceResponse<GetUserResponse>();
         }
     }
 }

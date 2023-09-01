@@ -1,0 +1,180 @@
+﻿@using GGR.Client.Areas.FileRecord.Services.Contracts;
+@using GGR.Shared.FileRecord;
+@using GGR.Client.Areas.FileRecord.Models;
+@using GGR.Client.Areas.FileRecord.Utils;
+
+@inject IFileRecordClientService FileRecordClientService;
+@inject SweetAlertService Sweet;
+
+@layout MainLayout
+@attribute [Authorize(Roles = "Admin, Editor")]
+@attribute [Route(Routes.FileRecord.ManageFileRecords)]
+
+
+<h3>Administrar archivos de registros</h3>
+
+<EditForm Model="@request" OnValidSubmit="@UploadFileHandler" style="width: min(95%, 600px);">
+    <div class="mb-3">
+        <label for="email" class="form-label">Fecha del archivo registro</label>
+        <InputDate @bind-Value="request.DateForRecord" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label for="password" class="form-label">Contraseña</label>
+        <InputFile OnChange="OnInputFileChange" accept=".csv" class="form-control" />
+    </div>
+
+    <button class="btn btn-primary">
+        Subir registro
+    </button>
+</EditForm>
+
+@if ( FileRecords.Any() )
+{
+    <h4 class="mt-5">Archivos de registros sin procesar</h4>
+
+    <table class="table table-bordered mt-1">
+        <thead class="thead-dark">
+            <tr>
+                <th scope="col">Id</th>
+                <th scope="col">Día del registro</th>
+                <th scope="col">Fecha de carga</th>
+                <th scope="col">Acciones</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            @foreach ( var file in FileRecords )
+            {
+                <tr>
+                    <td scope="row">@file.Id</td>
+                    <td>@file.FileName</td>
+                    <td>@file.UploadedOn.ToString()</td>
+                    <td>
+                        <button class="btn btn-primary">
+                            Procesar
+                        </button>
+                    </td>
+
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <h4 class="mt-5 text-primary">Todos los archivos se encuentran procesados</h4>
+}
+
+@code {
+    private List<FileRecord> FileRecords { get; set; } = new List<FileRecord>();
+    private long maxFileSize = 1048576;
+    private UploadFileRecordRequest request { get; set; } = new UploadFileRecordRequest();
+
+    private async Task OnInputFileChange(InputFileChangeEventArgs arg)
+    {
+        using var content = new MultipartFormDataContent();
+        var fileContent = new StreamContent(arg.File.OpenReadStream(maxFileSize));
+        using var memoryStream = new MemoryStream();
+        await fileContent.CopyToAsync(memoryStream);
+        var base64content = Convert.ToBase64String(memoryStream.ToArray());
+
+        request.FileContentBase64 = base64content;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadFileRecords();
+    }
+
+    private async Task LoadFileRecords()
+    {
+        var toast = Sweet.Mixin(new SweetAlertOptions
+            {
+                Toast = true,
+                TimerProgressBar = true,
+                Position = "top-end",
+                ShowConfirmButton = false,
+                Timer = 3000,
+            });
+
+        try
+        {
+            var response = await FileRecordClientService.GetFileRecordsWithoutProcessing();
+
+            if ( response == null )
+                throw new Exception("Respuesta nulla");
+
+            if ( response.Data == null )
+            {
+                await toast.FireAsync(new SweetAlertOptions
+                    {
+                        Icon = "error",
+                        Title = response.Message
+                    });
+            }
+            else
+            {
+                FileRecords = response.Data!.FileRecords
+                    .Select(file => FileRecordMapper.MapToEntity(file)).ToList();
+
+            }
+        }
+        catch ( Exception ex )
+        {
+            await toast.FireAsync(new SweetAlertOptions
+                {
+                    Icon = "error",
+                    Title = ex.Message
+                });
+        }
+    }
+
+    private async Task UploadFileHandler()
+    {
+        var toast = Sweet.Mixin(new SweetAlertOptions
+            {
+                Toast = true,
+                TimerProgressBar = true,
+                Position = "top-end",
+                ShowConfirmButton = false,
+                Timer = 3000,
+            });
+
+        try
+        {
+            var response = await FileRecordClientService.UploadFileRecord(request);
+
+            if ( response == null )
+                throw new Exception("Respuesta nulla");
+
+            if ( response.Data == null )
+            {
+                await toast.FireAsync(new SweetAlertOptions
+                    {
+                        Icon = "error",
+                        Title = response.Message
+                    });
+            }
+            else
+            {
+                await toast.FireAsync(new SweetAlertOptions
+                    {
+                        Icon = "success",
+                        Title = response.Message
+                    });
+                await LoadFileRecords();
+                request = new UploadFileRecordRequest();
+            }
+        }
+        catch ( Exception ex )
+        {
+            await toast.FireAsync(new SweetAlertOptions
+                {
+                    Icon = "error",
+                    Title = ex.Message
+                });
+        }
+    }
+}

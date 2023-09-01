@@ -87,7 +87,8 @@ public class SaleTicketCommands : ISaleTicketCommands
         if ( user == null )
             throw new Exception(SaleTicketsError.UserNotFoundWithEmail.ToString());
 
-        var saleTickets = dbContext.SaleTickets.Include(ticket => ticket.User).Where(ticket => ticket.User.Email == email);
+        var saleTickets = dbContext.SaleTickets.Include(ticket => ticket.User)
+            .Where(ticket => ticket.User.Email == email);
 
         return saleTickets.ToList();
     }

@@ -28,7 +28,7 @@ public static class DependencyInjection
 
             options.AddJob<BackgroundFileRecordService>(fileRecordJobKey)
                 .AddTrigger(trigger => trigger.ForJob(fileRecordJobKey)
-                .WithCronSchedule("* * 23 ? * * *"));
+                .WithCronSchedule("0 0 0 ? * * *"));
 
         });
 

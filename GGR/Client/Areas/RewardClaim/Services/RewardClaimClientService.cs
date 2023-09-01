@@ -1,5 +1,6 @@
 ﻿using GGR.Client.Areas.RewardClaim.Services.Contracts;
 using GGR.Shared;
+using GGR.Shared.Reward;
 using GGR.Shared.RewardClaim;
 using GGR.Shared.User;
 using Microsoft.AspNetCore.Components;
@@ -33,20 +34,25 @@ public class RewardClaimClientService : IRewardClaimClientService
         var token = await _localStorageService.GetItemAsync<string>("token");
         var requestMessage = new HttpRequestMessage(HttpMethod.Get, "api/RewardClaim/get-all-reward-claims");
         requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-        var response = await _httpClient.SendAsync(requestMessage);
-        if ( response.StatusCode == System.Net.HttpStatusCode.Unauthorized )
-            _navigationManager.NavigateTo(Routes.User.LoginPageSesionExpired);
-
-        var content = await response.Content.ReadFromJsonAsync<ServiceResponse<GetAllRewardClaimsResponse>>();
-
-        if ( content != null )
+        try
         {
-            return content;
+            var response = await _httpClient.SendAsync(requestMessage);
+            var content = await response.Content.ReadFromJsonAsync<ServiceResponse<GetAllRewardClaimsResponse>>();
+
+            if ( content != null )
+            {
+                return content;
+            }
+            else
+            {
+                throw new Exception();
+            }
         }
-        else
+        catch ( Exception ex )
         {
-            throw new Exception("Content for fetching all reward claims is null");
+            _logger.LogError(ex, "Something went wrong while fetching user by id");
+            _navigationManager.NavigateTo(Routes.Customer.LoginCustomerSessionExpired);
+            return new ServiceResponse<GetAllRewardClaimsResponse>();
         }
     }
 
@@ -58,20 +64,25 @@ public class RewardClaimClientService : IRewardClaimClientService
         var requestMessage = new HttpRequestMessage(HttpMethod.Put, "api/RewardClaim/update-reward-claim-status-admin");
         requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         requestMessage.Content = JsonContent.Create(request);
-
-        var response = await _httpClient.SendAsync(requestMessage);
-        if ( response.StatusCode == System.Net.HttpStatusCode.Unauthorized )
-            _navigationManager.NavigateTo(Routes.User.LoginPageSesionExpired);
-
-        var content = await response.Content.ReadFromJsonAsync<ServiceResponse<UpdateRewardClaimStatusResponse>>();
-
-        if ( content != null )
+        try
         {
-            return content;
+            var response = await _httpClient.SendAsync(requestMessage);
+            var content = await response.Content.ReadFromJsonAsync<ServiceResponse<UpdateRewardClaimStatusResponse>>();
+
+            if ( content != null )
+            {
+                return content;
+            }
+            else
+            {
+                throw new Exception();
+            }
         }
-        else
+        catch ( Exception ex )
         {
-            throw new Exception("Content for updating reward claim status is null");
+            _logger.LogError(ex, "Something went wrong while fetching user by id");
+            _navigationManager.NavigateTo(Routes.Customer.LoginCustomerSessionExpired);
+            return new ServiceResponse<UpdateRewardClaimStatusResponse>();
         }
     }
 
@@ -83,19 +94,25 @@ public class RewardClaimClientService : IRewardClaimClientService
         var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"api/RewardClaim/get-reward-claims-email/{email}");
         requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-        var response = await _httpClient.SendAsync(requestMessage);
-        if ( response.StatusCode == System.Net.HttpStatusCode.Unauthorized )
-            _navigationManager.NavigateTo(Routes.User.LoginPageSesionExpired);
-
-        var content = await response.Content.ReadFromJsonAsync<ServiceResponse<GetAllRewardClaimsResponse>>();
-
-        if ( content != null )
+        try
         {
-            return content;
+            var response = await _httpClient.SendAsync(requestMessage);
+            var content = await response.Content.ReadFromJsonAsync<ServiceResponse<GetAllRewardClaimsResponse>>();
+
+            if ( content != null )
+            {
+                return content;
+            }
+            else
+            {
+                throw new Exception();
+            }
         }
-        else
+        catch ( Exception ex )
         {
-            throw new Exception("Content for fetching all reward claims is null");
+            _logger.LogError(ex, "Something went wrong while fetching user by id");
+            _navigationManager.NavigateTo(Routes.Customer.LoginCustomerSessionExpired);
+            return new ServiceResponse<GetAllRewardClaimsResponse>();
         }
     }
 
@@ -107,19 +124,25 @@ public class RewardClaimClientService : IRewardClaimClientService
         var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"api/RewardClaim/get-reward-claims-by-id/{id}");
         requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-        var response = await _httpClient.SendAsync(requestMessage);
-        if ( response.StatusCode == System.Net.HttpStatusCode.Unauthorized )
-            _navigationManager.NavigateTo(Routes.User.LoginPageSesionExpired);
-
-        var content = await response.Content.ReadFromJsonAsync<ServiceResponse<GetAllRewardClaimsResponse>>();
-
-        if ( content != null )
+        try
         {
-            return content;
+            var response = await _httpClient.SendAsync(requestMessage);
+            var content = await response.Content.ReadFromJsonAsync<ServiceResponse<GetAllRewardClaimsResponse>>();
+
+            if ( content != null )
+            {
+                return content;
+            }
+            else
+            {
+                throw new Exception();
+            }
         }
-        else
+        catch ( Exception ex )
         {
-            throw new Exception("Content for fetching all reward claims is null");
+            _logger.LogError(ex, "Something went wrong while fetching user by id");
+            _navigationManager.NavigateTo(Routes.Customer.LoginCustomerSessionExpired);
+            return new ServiceResponse<GetAllRewardClaimsResponse>();
         }
     }
 

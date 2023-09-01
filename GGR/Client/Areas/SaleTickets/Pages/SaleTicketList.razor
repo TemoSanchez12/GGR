@@ -30,7 +30,6 @@
                 <th scope="col">Cantidad</th>
                 <th scope="col">Puntos asignados</th>
                 <th scope="col">Litros cargados</th>
-                <th scope="col">Acciones</th>
             </tr>
         </thead>
 
@@ -44,12 +43,6 @@
                     <td>@ticket.Amount</td>
                     <td>@ticket.Points</td>
                     <td>@ticket.Liters</td>
-                    <td>
-                        <a class="btn btn-primary btn-sm" href="@($"{Routes.Reward.EditReward}/{ticket.Id.ToString()}")">
-                            <i class="oi oi-pencil"></i> Cambiar estado de recompensa
-                        </a>
-                    </td>
-
                 </tr>
             }
         </tbody>

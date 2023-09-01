@@ -5,6 +5,7 @@ using GGR.Server.Errors;
 using Microsoft.EntityFrameworkCore;
 using GGR.Server.Data.Models;
 using GGR.Server.Infrastructure.Contracts;
+using GGR.Shared.FileRecord;
 
 namespace GGR.Server.Commands;
 
@@ -164,10 +165,76 @@ public class FileRecordCommands : IFileRecordCommands
             ticket.Liters = saleRecord.Amount / 20;
             ticket.Status = Data.Models.Utils.SaleTicketStatus.Checked;
 
-            ticket.User.Points = ticket.Points;
+            ticket.User.Points += ticket.Points;
         }
 
         dbContext.SaleRecords.RemoveRange(dbContext.SaleRecords);
         await dbContext.SaveChangesAsync();
+    }
+
+    public async Task<(string, string)> UploadFileRecord(UploadFileRecordRequest request)
+    {
+        _logger.LogInformation("Uploading file date: {UploadDate}", DateTime.Now.Date);
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+
+        if ( dbContext.FileRecords.Any(f => f.FileName == request.DateForRecord.ToString("dd-MM-yyyy")) )
+        {
+            _logger.LogWarning("File already uploaded today");
+            throw new Exception(FileRecordError.FileAlreadyUploadedForThatDate.ToString());
+        }
+
+        var trustedFileNameForFileStorage = $"{request.DateForRecord.ToString("dd-MM-yyyy")}.csv";
+        var untrustedFileName = request.DateForRecord.ToString("dd-MM-yyyy");
+        var trustedFileNameForDisplay = WebUtility.HtmlEncode(untrustedFileName);
+        var path = Path.Combine(_env.ContentRootPath, "FileRecords", trustedFileNameForFileStorage);
+
+        var recordId = Guid.NewGuid();
+        var fileRecord = new FileRecord
+        {
+            Id = recordId,
+            FileName = trustedFileNameForDisplay,
+            FileStorageName = trustedFileNameForFileStorage,
+            UploadedOn = DateTime.Now,
+            key = path,
+            IsProcessed = false
+        };
+
+        await using var stream = new FileStream(path, FileMode.Create);
+        var bytes = Convert.FromBase64String(request.FileContentBase64);
+        var content = new StreamContent(new MemoryStream(bytes));
+        await content.CopyToAsync(stream);
+
+        try
+        {
+            await dbContext.FileRecords.AddAsync(fileRecord);
+            await dbContext.SaveChangesAsync();
+        }
+        catch ( Exception ex )
+        {
+            _logger.LogError(ex, "Error saving file record to database");
+            throw new Exception(FileRecordError.ErrorSavingFileRecordToDatabase.ToString());
+        }
+
+        try
+        {
+            await _emailSender.SendEmailAsync(null, $"Archivo de ventas cargado {DateTime.Now.ToString("dd-MM-yyyy")}", $"Se ha subido el archivo de ventas {DateTime.Now}");
+        }
+        catch ( Exception ex )
+        {
+            _logger.LogError(ex, "Error sending email");
+            throw new Exception(FileRecordError.ErrorSendingEmail.ToString());
+        }
+
+        return (trustedFileNameForDisplay, trustedFileNameForFileStorage);
+    }
+
+    public async Task<List<FileRecord>> GetFileRecordsWithoutProcessing()
+    {
+        _logger.LogInformation("Fetching files records without processing: {Date}", DateTime.Now.Date);
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+
+        var fileRecords = await dbContext.FileRecords.Where(f => !f.IsProcessed).ToListAsync();
+
+        return fileRecords;
     }
 }

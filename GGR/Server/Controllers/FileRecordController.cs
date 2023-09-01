@@ -14,6 +14,7 @@ public class FileRecordController : ControllerBase
     private static readonly string _successUploadFileMessage = "Archivo guardado correctamente";
     private static readonly string _errorUploadFileMessage = "Error al guardar el archivo";
     private static readonly string _errorFetchingFile = "Error al obtener el archivo";
+    private static readonly string _errorFetchingFileWithoutProcessing = "Error al obtener registros sin procesar";
 
     private readonly ILogger<FileRecordController> _logger;
     private readonly IFileRecordCommands _fileRecordCommands;
@@ -38,16 +39,77 @@ public class FileRecordController : ControllerBase
             response.Data = new UploadFileResponse { FileName = fileName, StoredFileName = StoredFileName };
             return Ok(response);
         }
-        catch (Exception ex)
+        catch ( Exception ex )
         {
             _logger.LogError("Something went wrong while saving file {ErrorMessage}", ex.Message);
-            var error = (FileRecordError)Enum.Parse(typeof(FileRecordError), ex.Message);
+            var error = (FileRecordError) Enum.Parse(typeof(FileRecordError), ex.Message);
             response.Success = false;
 
-            switch (error)
+            switch ( error )
             {
                 case FileRecordError.FileAlreadyUploadedToday:
                     response.Message = FileRecordErrorMessage.FileAlreadyUploadedToday;
+                    return BadRequest(response);
+                case FileRecordError.ErrorSavingFileRecordToDatabase:
+                    response.Message = FileRecordErrorMessage.ErrorSavingFileRecordToDatabase;
+                    return StatusCode(StatusCodes.Status500InternalServerError, response);
+                case FileRecordError.ErrorSendingEmail:
+                    response.Message = FileRecordErrorMessage.ErrorSendingEmail;
+                    return StatusCode(StatusCodes.Status500InternalServerError, response);
+                default:
+                    response.Message = _errorUploadFileMessage;
+                    return StatusCode(StatusCodes.Status500InternalServerError, response);
+            }
+        }
+    }
+
+    [HttpGet("get-file-records-without-processing")]
+    [Authorize(Roles = "Admin, Editor")]
+    public async Task<ActionResult<ServiceResponse<GetFileRecordsResponse>>> GetFileRecordsWithoutProcessing()
+    {
+        var response = new ServiceResponse<GetFileRecordsResponse>();
+
+        try
+        {
+            var fileRecords = await _fileRecordCommands.GetFileRecordsWithoutProcessing();
+            response.Success = true;
+            response.Message = "";
+            response.Data = new GetFileRecordsResponse { FileRecords = fileRecords.Select(f => f.ToDefinition()).ToList() };
+            return Ok(response);
+        }
+        catch ( Exception ex )
+        {
+            _logger.LogError(ex, "Something went wrong while fetching file records without processing");
+            response.Success = false;
+            response.Message = _errorFetchingFileWithoutProcessing;
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
+    }
+
+    [HttpPost("upload-file-record")]
+    [Authorize(Roles = "Admin, Editor")]
+    public async Task<ActionResult<ServiceResponse<UploadFileResponse>>> UploadFileRecord(UploadFileRecordRequest request)
+    {
+        var response = new ServiceResponse<UploadFileResponse>();
+
+        try
+        {
+            var (fileName, StoredFileName) = await _fileRecordCommands.UploadFileRecord(request);
+            response.Success = true;
+            response.Message = _successUploadFileMessage;
+            response.Data = new UploadFileResponse { FileName = fileName, StoredFileName = StoredFileName };
+            return Ok(response);
+        }
+        catch ( Exception ex )
+        {
+            _logger.LogError("Something went wrong while saving file {ErrorMessage}", ex.Message);
+            var error = (FileRecordError) Enum.Parse(typeof(FileRecordError), ex.Message);
+            response.Success = false;
+
+            switch ( error )
+            {
+                case FileRecordError.FileAlreadyUploadedForThatDate:
+                    response.Message = FileRecordErrorMessage.FileAlreadyUploadedForThatDate;
                     return BadRequest(response);
                 case FileRecordError.ErrorSavingFileRecordToDatabase:
                     response.Message = FileRecordErrorMessage.ErrorSavingFileRecordToDatabase;
@@ -73,12 +135,12 @@ public class FileRecordController : ControllerBase
             var fileName = await _fileRecordCommands.GetFileByDate(request.Date);
             response.Success = true;
             response.Message = _successUploadFileMessage;
-            if (fileName != null)
+            if ( fileName != null )
                 response.Data = new GetFileByDateResponse { FileName = fileName };
             return Ok(response);
 
         }
-        catch (Exception ex)
+        catch ( Exception ex )
         {
             _logger.LogError("Something went wrong while getting file by date {ErrorMessage}", ex.Message);
             response.Success = false;

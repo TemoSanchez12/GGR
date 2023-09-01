@@ -16,7 +16,7 @@ public static class Routes
 
     public static class User
     {
-        public const string LoginPage = "/login-admin";
+        public const string LoginPage = "/login";
         public const string UserList = "/users";
         public const string CreateUser = "/register-admin";
         public const string EditUser = "/users/edit/{Id}";
@@ -43,7 +43,7 @@ public static class Routes
 
     public static class FileRecord
     {
-        public const string UploadFileRecord = "/upload-file-record";
+        public const string ManageFileRecords = "/manage-file-records";
     }
 
     public static string ParseId(string route, string id)
