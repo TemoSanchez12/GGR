@@ -60,6 +60,7 @@ public class SaleTicketController : ControllerBase
     [Authorize(Roles = "Admin, Client")]
     public async Task<ActionResult<ServiceResponse<RegisterTicketResponse>>> RegisterTicket(RegisterTicketRequest request)
     {
+        Console.WriteLine(request.UserId);
         var response = new ServiceResponse<RegisterTicketResponse>();
         try
         {

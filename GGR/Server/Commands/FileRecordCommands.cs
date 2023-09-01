@@ -98,43 +98,42 @@ public class FileRecordCommands : IFileRecordCommands
         return fileRecord?.FileStorageName;
     }
 
-    public async Task CheckTicketsFromFiles()
+    public async Task<FileRecord> CheckTicketFromFile(Guid FileRecordId)
     {
         _logger.LogInformation($"CheckTickets from files {DateTime.UtcNow}");
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
 
-        var fileRecords = await dbContext.FileRecords
-            .Where(fileRecord => !fileRecord.IsProcessed).ToListAsync();
+        var fileRecord = await dbContext.FileRecords
+            .FirstOrDefaultAsync(fileRecord => fileRecord.Id == FileRecordId);
+
+        if ( fileRecord == null )
+            throw new Exception(FileRecordError.FileNotFound.ToString());
 
         var saleRecords = new List<SaleRecord>();
 
-        foreach ( var fileRecord in fileRecords )
+        var readCsv = File.ReadAllText(fileRecord.key);
+        var csvFileRecord = readCsv.Split("\n").ToList();
+        csvFileRecord.RemoveAt(0);
+
+        foreach ( var row in csvFileRecord )
         {
-            var readCsv = File.ReadAllText(fileRecord.key);
-            var csvFileRecord = readCsv.Split("\n").ToList();
-            csvFileRecord.RemoveAt(0);
-
-            foreach ( var row in csvFileRecord )
+            if ( !string.IsNullOrEmpty(row) )
             {
-                Console.Write(row + "aqui mero");
-                if ( !string.IsNullOrEmpty(row) )
+                var cells = row.Split(',');
+                _logger.LogInformation("Saving file record for ticket {Folio}", cells[0]);
+
+                var saleRecord = new SaleRecord
                 {
-                    var cells = row.Split(',');
-                    _logger.LogInformation("Saving file record for ticket {Folio}", cells[0]);
+                    Id = Guid.NewGuid(),
+                    Amount = Decimal.Parse(cells[1]),
+                    Folio = cells[0]
+                };
 
-                    var saleRecord = new SaleRecord
-                    {
-                        Id = Guid.NewGuid(),
-                        Amount = Decimal.Parse(cells[1]),
-                        Folio = cells[0]
-                    };
-
-                    saleRecords.Add(saleRecord);
-                }
+                saleRecords.Add(saleRecord);
             }
-
-            fileRecord.IsProcessed = true;
         }
+
+        fileRecord.IsProcessed = true;
 
         await dbContext.SaleRecords.AddRangeAsync(saleRecords);
         await dbContext.SaveChangesAsync();
@@ -170,12 +169,16 @@ public class FileRecordCommands : IFileRecordCommands
 
         dbContext.SaleRecords.RemoveRange(dbContext.SaleRecords);
         await dbContext.SaveChangesAsync();
+        return fileRecord;
     }
 
     public async Task<(string, string)> UploadFileRecord(UploadFileRecordRequest request)
     {
         _logger.LogInformation("Uploading file date: {UploadDate}", DateTime.Now.Date);
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+
+        if ( request.DateForRecord > DateTime.Now )
+            throw new Exception(FileRecordError.FileDatePassToday.ToString());
 
         if ( dbContext.FileRecords.Any(f => f.FileName == request.DateForRecord.ToString("dd-MM-yyyy")) )
         {
@@ -236,5 +239,20 @@ public class FileRecordCommands : IFileRecordCommands
         var fileRecords = await dbContext.FileRecords.Where(f => !f.IsProcessed).ToListAsync();
 
         return fileRecords;
+    }
+
+    public async Task CheckTicketsFromFiles()
+    {
+        _logger.LogInformation($"CheckTickets from files records in date  {DateTime.Now}");
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+
+        var fileRecordsWithoutProcessing = await dbContext.FileRecords
+            .Where(f => !f.IsProcessed).ToArrayAsync();
+
+        foreach ( var fileRecord in fileRecordsWithoutProcessing )
+        {
+            _logger.LogInformation("Checking tickets from file {FileId} {FileName}", fileRecord.Id, fileRecord.FileName);
+            await CheckTicketFromFile(fileRecord.Id);
+        }
     }
 }

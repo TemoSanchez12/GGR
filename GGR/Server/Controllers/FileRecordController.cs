@@ -15,6 +15,9 @@ public class FileRecordController : ControllerBase
     private static readonly string _errorUploadFileMessage = "Error al guardar el archivo";
     private static readonly string _errorFetchingFile = "Error al obtener el archivo";
     private static readonly string _errorFetchingFileWithoutProcessing = "Error al obtener registros sin procesar";
+    private static readonly string _successFetchingFileWithoutProcessing = "Se han devulto los registros de archivo sin procesar";
+    private static readonly string _successProcessingFileRecordMessage = "Se ha procesaso el archivo de registros correctamente";
+    private static readonly string _errorProcessingFileRecordMessage = "Error al procesar el archivo de registro";
 
     private readonly ILogger<FileRecordController> _logger;
     private readonly IFileRecordCommands _fileRecordCommands;
@@ -73,7 +76,7 @@ public class FileRecordController : ControllerBase
         {
             var fileRecords = await _fileRecordCommands.GetFileRecordsWithoutProcessing();
             response.Success = true;
-            response.Message = "";
+            response.Message = _successFetchingFileWithoutProcessing;
             response.Data = new GetFileRecordsResponse { FileRecords = fileRecords.Select(f => f.ToDefinition()).ToList() };
             return Ok(response);
         }
@@ -82,6 +85,29 @@ public class FileRecordController : ControllerBase
             _logger.LogError(ex, "Something went wrong while fetching file records without processing");
             response.Success = false;
             response.Message = _errorFetchingFileWithoutProcessing;
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
+    }
+
+    [HttpPost("processing-file-record")]
+    [Authorize(Roles = "Admin, Editor")]
+    public async Task<ActionResult<ServiceResponse<ProcessingFileRecordResponse>>> ProcessFileRecord(ProcessingFileRecordRequest request)
+    {
+        var response = new ServiceResponse<ProcessingFileRecordResponse>();
+
+        try
+        {
+            var fileRecord = await _fileRecordCommands.CheckTicketFromFile(request.FileRecordId);
+            response.Success = true;
+            response.Message = _successProcessingFileRecordMessage;
+            response.Data = new ProcessingFileRecordResponse { FileRecord = fileRecord.ToDefinition() };
+            return Ok(response);
+        }
+        catch ( Exception ex )
+        {
+            _logger.LogError(ex, "Something went wrong while processing file record");
+            response.Success = false;
+            response.Message = _errorProcessingFileRecordMessage;
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
@@ -110,6 +136,9 @@ public class FileRecordController : ControllerBase
             {
                 case FileRecordError.FileAlreadyUploadedForThatDate:
                     response.Message = FileRecordErrorMessage.FileAlreadyUploadedForThatDate;
+                    return BadRequest(response);
+                case FileRecordError.FileDatePassToday:
+                    response.Message = FileRecordErrorMessage.FileDatePassToday;
                     return BadRequest(response);
                 case FileRecordError.ErrorSavingFileRecordToDatabase:
                     response.Message = FileRecordErrorMessage.ErrorSavingFileRecordToDatabase;

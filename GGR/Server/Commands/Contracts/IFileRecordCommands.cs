@@ -12,4 +12,5 @@ public interface IFileRecordCommands
     Task<string?> GetFileByDate(DateTime date);
     Task CheckTicketsFromFiles();
     Task<List<FileRecord>> GetFileRecordsWithoutProcessing();
+    Task<FileRecord> CheckTicketFromFile(Guid FileRecordId);
 }

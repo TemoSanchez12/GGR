@@ -148,4 +148,34 @@ public class FileRecordClientService : IFileRecordClientService
             return new ServiceResponse<GetFileRecordsResponse>();
         }
     }
+
+    public async Task<ServiceResponse<ProcessingFileRecordResponse>> ProcessFileRecord(ProcessingFileRecordRequest request)
+    {
+        _logger.LogInformation($"Fetching file record without processing {DateTime.Now}");
+        var token = await _localStorageService.GetItemAsync<string>("token");
+        var requestMessage = new HttpRequestMessage(HttpMethod.Post, "/api/FileRecord/processing-file-record");
+        requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        requestMessage.Content = JsonContent.Create(request);
+
+        try
+        {
+            var response = await _httpClient.SendAsync(requestMessage);
+            var content = await response.Content.ReadFromJsonAsync<ServiceResponse<ProcessingFileRecordResponse>>();
+
+            if ( content != null )
+            {
+                return content;
+            }
+            else
+            {
+                throw new Exception();
+            }
+        }
+        catch ( Exception ex )
+        {
+            _logger.LogError(ex, "Something went wrong while fetching user by id");
+            _navigationManager.NavigateTo(Routes.Customer.LoginCustomerSessionExpired);
+            return new ServiceResponse<ProcessingFileRecordResponse>();
+        }
+    }
 }

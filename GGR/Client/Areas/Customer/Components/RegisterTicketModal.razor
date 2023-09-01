@@ -1,8 +1,10 @@
 ﻿@using GGR.Shared.SaleTicket;
 @using GGR.Client.Areas.SaleTickets.Services.Contracts;
+@using System.Security.Claims;
 
 @inject ISaleTicketClientService TicketClientService;
 @inject SweetAlertService Sweet;
+@inject AuthenticationStateProvider AuthStateProvider;
 
 
 <Modal Open="@Open">
@@ -24,10 +26,9 @@
 </Modal>
 
 @code {
-    private RegisterTicketRequest registerRequest = new RegisterTicketRequest();
 
-    [Parameter]
-    public string CustomerId { get; set; } = string.Empty;
+    private string CustomerId { get; set; } = string.Empty;
+    private RegisterTicketRequest registerRequest = new RegisterTicketRequest();
 
     [Parameter]
     public bool Open { get; set; }
@@ -40,8 +41,12 @@
         OnCloseModal.InvokeAsync();
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var claims = authState.User.Claims;
+        CustomerId = claims.First(claim => claim.Type == ClaimTypes.UserData).Value;
         registerRequest.UserId = CustomerId;
     }
 

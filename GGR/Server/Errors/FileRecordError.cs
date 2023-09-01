@@ -8,5 +8,6 @@ public enum FileRecordError
     ErrorSendingEmail,
     FileNotFound,
     FileIsNotCsv,
-    FileAlreadyUploadedForThatDate
+    FileAlreadyUploadedForThatDate,
+    FileDatePassToday
 }

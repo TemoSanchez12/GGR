@@ -10,4 +10,5 @@ public interface IFileRecordClientService
     Task<ServiceResponse<GetFileByDateResponse>> GetFileRecordByDate(DateTime date);
     Task<ServiceResponse<UploadFileResponse>> UploadFileRecord(UploadFileRecordRequest request);
     Task<ServiceResponse<GetFileRecordsResponse>> GetFileRecordsWithoutProcessing();
+    Task<ServiceResponse<ProcessingFileRecordResponse>> ProcessFileRecord(ProcessingFileRecordRequest request);
 }
