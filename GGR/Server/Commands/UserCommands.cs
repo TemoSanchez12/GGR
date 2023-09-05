@@ -209,8 +209,6 @@ public class UserCommands : IUserCommands
 
         registration.VerifiedAt = DateTime.UtcNow;
 
-        // TODO: check admin password request
-
         try
         {
             await dbContext.SaveChangesAsync();
@@ -222,10 +220,10 @@ public class UserCommands : IUserCommands
         }
     }
 
-    public async Task ForgotUserPassword(string email)
+    public async Task ForgotUserPassword(EmailToRetorePassRequest request)
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
-        var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
+        var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
 
         if ( user == null )
             throw new Exception(UserError.UserNotFound.ToString());
@@ -238,7 +236,16 @@ public class UserCommands : IUserCommands
         registration.PasswordResetToken = CreateRandomToken();
         registration.ResetTokenExpires = DateTime.UtcNow.AddMinutes(45);
 
-        // TODO: Send email with link to restore password
+        try
+        {
+            var subject = "Restablecer la contraseña GGR Gasolinera";
+            await _emailSender.SendEmailAsync(user.Email, subject, EmailVerificationBuilder.BuildEmailForRestorePassword(registration.PasswordResetToken));
+        }
+        catch ( Exception ex )
+        {
+            _logger.LogError("Something went wrong while sending email verification: {ErrorMessage}", ex.Message);
+            throw new Exception(UserError.ErrorSendingVerifycationEmail.ToString());
+        }
 
         try
         {
@@ -254,7 +261,8 @@ public class UserCommands : IUserCommands
     public async Task RestoreUserPassword(ResetPasswordRequest request)
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
-        var registration = await dbContext.Registrations.Include(r => r.User).FirstOrDefaultAsync(r => r.PasswordResetToken == request.ResetToken);
+        var registration = await dbContext.Registrations.Include(r => r.User)
+            .FirstOrDefaultAsync(r => r.PasswordResetToken == request.ResetToken);
 
         if ( registration == null )
             throw new Exception(UserError.RegistrationNotFound.ToString());

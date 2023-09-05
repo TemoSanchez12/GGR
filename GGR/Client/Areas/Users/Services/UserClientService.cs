@@ -235,4 +235,59 @@ public class UserClientService : IUserClientService
             return new ServiceResponse<GetUserResponse>();
         }
     }
+
+    public async Task<ServiceResponse<EmailToRestorePassResponse>> EmailToRestorePass(EmailToRetorePassRequest request)
+    {
+        _logger.LogInformation("Sending request for retore password to user {UserEmail}", request.Email);
+        var requestMessage = new HttpRequestMessage(HttpMethod.Post, "api/User/forgot-password");
+        requestMessage.Content = JsonContent.Create(request);
+
+        try
+        {
+            var response = await _httpClient.SendAsync(requestMessage);
+            var content = await response.Content.ReadFromJsonAsync<ServiceResponse<EmailToRestorePassResponse>>();
+
+            if ( content != null )
+            {
+                return content;
+            }
+            else
+            {
+                throw new Exception();
+            }
+        }
+        catch ( Exception ex )
+        {
+            _logger.LogError(ex, "Something went wrong while fetching user by id");
+            _navigationManager.NavigateTo(Routes.Customer.LoginCustomerSessionExpired);
+            return new ServiceResponse<EmailToRestorePassResponse>();
+        }
+    }
+
+    public async Task<ServiceResponse<ResetPasswordResponse>> ResetPassword(ResetPasswordRequest request)
+    {
+        var requestMessage = new HttpRequestMessage(HttpMethod.Post, "/api/User/restore-password");
+        requestMessage.Content = JsonContent.Create(request);
+
+        try
+        {
+            var response = await _httpClient.SendAsync(requestMessage);
+            var content = await response.Content.ReadFromJsonAsync<ServiceResponse<ResetPasswordResponse>>();
+
+            if ( content != null )
+            {
+                return content;
+            }
+            else
+            {
+                throw new Exception();
+            }
+        }
+        catch ( Exception ex )
+        {
+            _logger.LogError(ex, "Something went wrong while fetching user by id");
+            _navigationManager.NavigateTo(Routes.Customer.LoginCustomerSessionExpired);
+            return new ServiceResponse<ResetPasswordResponse>();
+        }
+    }
 }

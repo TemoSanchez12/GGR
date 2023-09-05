@@ -8,12 +8,14 @@
 
   <ItemGroup>
     <None Remove="Areas\Customer\Pages\LoginCustomer.razor.css" />
+    <None Remove="Areas\Customer\Pages\RegisterCustomer.razor.css" />
     <None Remove="Shared\LoginLayoutAdmin.razor.css" />
     <None Remove="Shared\NavMenuCustomer.razor.css" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="Areas\Customer\Pages\LoginCustomer.razor.css" />
+    <Content Include="Areas\Customer\Pages\RegisterCustomer.razor.css" />
     <Content Include="Shared\LoginLayoutAdmin.razor.css" />
     <Content Include="Shared\NavMenuCustomer.razor.css" />
   </ItemGroup>

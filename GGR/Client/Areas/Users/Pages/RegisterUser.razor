@@ -7,34 +7,42 @@
 <h3 class="mb-5 mx-auto mt-4 text-center">Registrar Usuario</h3>
 
 <EditForm Model="registerRequest" OnValidSubmit="HandleValidSubmit" class="col-6 p-3 rounded-1 border border-secondary-subtle mx-auto">
+    <DataAnnotationsValidator />
+
     <div class="mb-3">
         <label for="email" class="form-label">Nombre</label>
         <InputText @bind-Value="registerRequest.Name" class="form-control" />
+        <ValidationMessage For="@(() => registerRequest.Name)" />
     </div>
 
     <div class="mb-3">
         <label for="email" class="form-label">Apellidos</label>
         <InputText @bind-Value="registerRequest.LastName" class="form-control" />
+        <ValidationMessage For="@(() => registerRequest.LastName)" />
     </div>
 
     <div class="mb-3">
         <label for="email" class="form-label">Telefono celular</label>
         <InputText @bind-Value="registerRequest.Phone" class="form-control" />
+        <ValidationMessage For="@(() => registerRequest.Phone)" />
     </div>
 
     <div class="mb-3">
         <label for="email" class="form-label">Correo Electronico</label>
         <InputText @bind-Value="registerRequest.Email" class="form-control" />
+        <ValidationMessage For="@(() => registerRequest.Email)" />
     </div>
 
     <div class="mb-3">
         <label for="password" class="form-label">Contraseña</label>
         <InputText @bind-Value="registerRequest.Password" type="password" class="form-control" />
+        <ValidationMessage For="@(() => registerRequest.Password)" />
     </div>
 
     <div class="mb-3">
         <label for="password" class="form-label">Confirme contraseña</label>
         <InputText @bind-Value="registerRequest.ConfirmPassword" type="password" class="form-control" />
+        <ValidationMessage For="@(() => registerRequest.ConfirmPassword)" />
     </div>
 
     <div class="mb-3">
@@ -44,6 +52,7 @@
             <option value="admin">Administrador</option>
             <option value="client">Cliente</option>
         </InputSelect>
+        <ValidationMessage For="@(() => registerRequest.UserRol)" />
     </div>
 
     <button type="submit" class="btn btn-success">Crear usuario</button>

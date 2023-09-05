@@ -15,4 +15,6 @@ public interface IUserClientService
     Task<ServiceResponse<GetTotalPointsResponse>> GetTotalPoints();
     Task<ServiceResponse<GetUserResponse>> GetUserById(string id);
     Task<ServiceResponse<GetUserResponse>> UpdateUser(UpdateUserRequest request);
+    Task<ServiceResponse<EmailToRestorePassResponse>> EmailToRestorePass(EmailToRetorePassRequest request);
+    Task<ServiceResponse<ResetPasswordResponse>> ResetPassword(ResetPasswordRequest request);
 }

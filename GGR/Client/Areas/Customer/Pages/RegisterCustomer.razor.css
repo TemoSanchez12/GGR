@@ -1,0 +1,65 @@
+﻿
+.modal-form-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #FCF4E8;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(90%, 500px);
+  border-radius: 10px;
+}
+
+.modal-form-welcome {
+  color: #6400C8;
+  font-size: 22px;
+}
+
+.form-customer-input {
+  background-color: red;
+}
+
+.form-customer-label {
+  font-size: 14px;
+  color: #808080;
+}
+
+.form-customer-control {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin: 20px 0;
+}
+
+.form-customer {
+  margin: 50px 0;
+  width: 100%;
+}
+
+.form-customer-submit-button {
+  text-align: center;
+  background-color: #7A5EEA;
+  margin: 0 auto;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 12px;
+  margin-top: 30px;
+  display: block;
+  padding: 10px 15px;
+  margin-bottom: 50px;
+}
+
+.form-customer-links {
+  display: flex;
+  gap: 30px;
+}
+
+  .form-customer-links a {
+    color: black;
+    text-decoration: none;
+    font-size: 12px;
+  }

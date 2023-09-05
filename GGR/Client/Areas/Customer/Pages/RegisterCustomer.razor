@@ -1,0 +1,132 @@
+﻿@using GGR.Client.Areas.Users.Services.Contract;
+@using GGR.Shared.User;
+@using GGR.Client;
+@using System.Web;
+
+@layout CustomerLayout
+@attribute [Route(Routes.Customer.RegisterCustomer)]
+
+<div class="modal-form-container">
+    <p class="modal-form-welcome">Bienvenido de nuevo</p>
+    <div>
+        <p>GGR</p>
+    </div>
+
+    <EditForm Model="registerRequest" OnValidSubmit="HandleValidSubmit" class="form-customer" style="margin: 30px 0; width: 90%;">
+        <DataAnnotationsValidator />
+
+        <div class="mb-3">
+            <label for="email" class="form-customer-label">Nombre</label>
+            <InputText @bind-Value="registerRequest.Name" class="form-control" />
+            <ValidationMessage For="@(() => registerRequest.Name)" />
+        </div>
+
+        <div class="mb-3">
+            <label for="email" class="form-customer-label">Apellidos</label>
+            <InputText @bind-Value="registerRequest.LastName" class="form-control" />
+            <ValidationMessage For="@(() => registerRequest.LastName)" />
+        </div>
+
+        <div class="mb-3">
+            <label for="email" class="form-customer-label">Telefono celular</label>
+            <InputText @bind-Value="registerRequest.Phone" class="form-control" />
+            <ValidationMessage For="@(() => registerRequest.Phone)" />
+        </div>
+
+        <div class="mb-3">
+            <label for="email" class="form-customer-label">Correo Electronico</label>
+            <InputText @bind-Value="registerRequest.Email" class="form-control" />
+            <ValidationMessage For="@(() => registerRequest.Email)" />
+        </div>
+
+        <div class="mb-3">
+            <label for="password" class="form-customer-label">Contraseña</label>
+            <InputText @bind-Value="registerRequest.Password" type="password" class="form-control" />
+            <ValidationMessage For="@(() => registerRequest.Password)" />
+        </div>
+
+        <div class="mb-3">
+            <label for="password" class="form-customer-label">Confirme contraseña</label>
+            <InputText @bind-Value="registerRequest.ConfirmPassword" type="password" class="form-control" />
+            <ValidationMessage For="@(() => registerRequest.ConfirmPassword)" />
+        </div>
+
+        <button type="submit" class="form-customer-submit-button">Crear cuenta</button>
+
+        @if ( loading )
+        {
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Creando cuenta...</span>
+            </div>
+        }
+    </EditForm>
+
+    <div class="form-customer-links">
+        <a href="@Routes.Customer.LoginCustomer">¿Ya tienes cuenta? Inicia sesión</a>
+    </div>
+</div>
+
+
+@code {
+    private UserRegisterRequest registerRequest = new();
+    private bool loading = false;
+
+    [Inject] private IUserClientService UserClientService { get; set; } = null!;
+    [Inject] private SweetAlertService Sweet { get; set; } = null!;
+    [Inject] private NavigationManager NavigationManager { get; set; } = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await UserClientService.UserLogout();
+        registerRequest.UserRol = "client";
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            loading = true;
+            var response = await UserClientService.RegisterUser(registerRequest);
+            var toast = Sweet.Mixin(new SweetAlertOptions
+                {
+                    Toast = true,
+                    TimerProgressBar = true,
+                    Position = "top-end",
+                    ShowConfirmButton = false,
+                    Timer = 3000,
+                });
+            loading = false;
+            if ( response.Success )
+            {
+
+                var alertText = registerRequest.UserRol == "client"
+                ? "Por favor revise su correo electronico para verificar su cuenta"
+                : "El admnistrador del sitio tendra que verificar tu cuenta";
+
+                await Sweet.FireAsync(new SweetAlertOptions
+                    {
+                        Title = "Cuenta creada exitosamente",
+                        Text = "Por favor revise su correo electronico para verificar su cuenta",
+                        Icon = SweetAlertIcon.Success,
+                        ShowCancelButton = false,
+                        ConfirmButtonText = "Entendido"
+                    });
+                NavigationManager.NavigateTo(Routes.Dashboard);
+            }
+            else
+                await toast.FireAsync(new SweetAlertOptions
+                    {
+                        Icon = "error",
+                        Title = response.Message
+                    });
+        }
+        catch ( Exception ex )
+        {
+            await Sweet.FireAsync(new SweetAlertOptions
+                {
+                    Icon = "error",
+                    Text = "Algo ha salido mal, por favor intentelo de nuevo"
+                });
+        }
+    }
+}

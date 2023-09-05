@@ -20,6 +20,9 @@ public class UserController : ControllerBase
     private static string _successGetTotalPointsMessage = "Se han devuelto el total de puntos";
     private static string _errorGettingTotalUsers = "Algo ha salido mal al obtener el numero de usuarios";
     private static string _successUpdatingUserMessage = "El usuario se ha actualizado correctamente";
+    private static string _successSendTokenToRestorePassMessage = "Se ha enviado un enlace al correo electronico para restableceer contraseña";
+    private static string _successRestorePassword = "Se ha actualizdo correcteamente la contraseña";
+
 
     private readonly ILogger<UserController> _logger;
     private readonly IUserCommands _userCommands;
@@ -107,7 +110,7 @@ public class UserController : ControllerBase
     }
 
     [HttpGet("get-user-by-id/{id}")]
-    [Authorize(Roles = "Admin, Editor")]
+    [Authorize(Roles = "Admin, Editor, Client")]
     public async Task<ActionResult<ServiceResponse<GetUserResponse>>> GetUserById(string id)
     {
         var response = new ServiceResponse<GetUserResponse>();
@@ -271,44 +274,57 @@ public class UserController : ControllerBase
     }
 
     [HttpPost("forgot-password")]
-    public async Task<IActionResult> ForgotUserPassword(string email)
+    public async Task<ActionResult<ServiceResponse<EmailToRestorePassResponse>>> ForgotUserPassword(EmailToRetorePassRequest request)
     {
+        var response = new ServiceResponse<EmailToRestorePassResponse>();
         try
         {
-            await _userCommands.ForgotUserPassword(email);
-            return Ok();
+            await _userCommands.ForgotUserPassword(request);
+            response.Success = true;
+            response.Message = _successSendTokenToRestorePassMessage;
+            return Ok(response);
         }
         catch ( Exception ex )
         {
             _logger.LogError("Error while forgort password user: {ErrorMessage}", ex.Message);
             var error = (UserError) Enum.Parse(typeof(UserError), ex.Message);
 
+            response.Success = false;
+            response.Message = _genericErrorMessage;
+
             return error switch
             {
-                UserError.UserNotFound => NotFound(UserErrorMessage.UserNotFound),
-                UserError.RegistrationNotFound => NotFound(UserErrorMessage.RegistrationNotFound),
-                _ => BadRequest()
+                UserError.UserNotFound => NotFound(response),
+                UserError.RegistrationNotFound => NotFound(response),
+                _ => BadRequest(response)
             };
         }
     }
 
     [HttpPost("restore-password")]
-    public async Task<ActionResult> RestoreUserPassword(ResetPasswordRequest request)
+    public async Task<ActionResult<ServiceResponse<ResetPasswordResponse>>> RestoreUserPassword(ResetPasswordRequest request)
     {
+        var response = new ServiceResponse<ResetPasswordResponse>();
+
         try
         {
             await _userCommands.RestoreUserPassword(request);
-            return Ok();
+            response.Success = true;
+            response.Message = _successRestorePassword;
+            return Ok(response);
         }
         catch ( Exception ex )
         {
             _logger.LogError("Error while forgort password user: {ErrorMessage}", ex.Message);
             var error = (UserError) Enum.Parse(typeof(UserError), ex.Message);
 
+            response.Success = false;
+            response.Message = _genericErrorMessage;
+
             return error switch
             {
-                UserError.RegistrationNotFound => NotFound(UserErrorMessage.RegistrationNotFound),
-                UserError.RegistrationExpired => Unauthorized(UserErrorMessage.RegistrationExpiredToken),
+                UserError.RegistrationNotFound => NotFound(response),
+                UserError.RegistrationExpired => Unauthorized(response),
                 _ => BadRequest()
             };
         }

@@ -12,6 +12,9 @@ public static class Routes
         public const string LoginCustomerSessionExpired = "/inicio-sesion?sessionExpired=true";
         public const string Profile = "/profile";
         public const string ClaimedRewards = "/recompensas-reclamadas";
+        public const string RegisterCustomer = "/registrarse";
+        public const string ResetPasswordRequest = "/recupear-password";
+        public const string RestorePassword = "/reasignar-password/{Token}";
     }
 
     public static class User
