@@ -24,7 +24,7 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 
 builder.Services.AddDbContextFactory<GlobalDbContext>(options =>
 {
-    options.UseSqlServer(connectionString);
+    options.UseNpgsql(connectionString);
 });
 
 // Configure Auth
@@ -74,8 +74,6 @@ app.UseEndpoints(endpoints =>
 {
     endpoints.MapControllers();
 });
-
-app.UseHttpsRedirection();
 
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
