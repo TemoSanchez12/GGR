@@ -1,7 +1,13 @@
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build-env
 WORKDIR /app
 
-COPY /*.sln ./
+COPY /GGR/Server/*.csproj ./
+RUN dotnet restore
+
+COPY /GGR/Client/*.csproj ./
+RUN dotnet restore
+
+COPY /GGR/Shared/*.csproj ./
 RUN dotnet restore
 
 COPY /GGR/Server/*.csproj ./
