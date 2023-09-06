@@ -21,13 +21,16 @@ public class UserCommands : IUserCommands
     private readonly ILogger<UserCommands> _logger;
     private readonly IConfiguration _configuration;
     private readonly IEmailSender _emailSender;
+    private IHttpContextAccessor _context;
 
     public UserCommands(
         IDbContextFactory<GlobalDbContext> dbContextFactory,
         ILogger<UserCommands> logger,
         IConfiguration configuration,
-        IEmailSender emailSender)
+        IEmailSender emailSender,
+        IHttpContextAccessor context)
     {
+        _context = context;
         _logger = logger;
         _dbContextFactory = dbContextFactory;
         _configuration = configuration;
@@ -114,7 +117,7 @@ public class UserCommands : IUserCommands
             string? email = user.Rol == UserRole.Client ? user.Email : null;
             var subject = "Verificación de cuenta GGR Gasolinera";
 
-            await _emailSender.SendEmailAsync(email, subject, EmailVerificationBuilder.BuildVerificationEmail(user, registration.VerificationToken));
+            await _emailSender.SendEmailAsync(email, subject, EmailVerificationBuilder.BuildVerificationEmail(GetBaseUrl(), registration.VerificationToken));
         }
         catch ( Exception ex )
         {
@@ -239,7 +242,7 @@ public class UserCommands : IUserCommands
         try
         {
             var subject = "Restablecer la contraseña GGR Gasolinera";
-            await _emailSender.SendEmailAsync(user.Email, subject, EmailVerificationBuilder.BuildEmailForRestorePassword(registration.PasswordResetToken));
+            await _emailSender.SendEmailAsync(user.Email, subject, EmailVerificationBuilder.BuildEmailForRestorePassword(GetBaseUrl(), registration.PasswordResetToken));
         }
         catch ( Exception ex )
         {
@@ -386,5 +389,10 @@ public class UserCommands : IUserCommands
     private static string CreateRandomToken()
     {
         return Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
+    }
+
+    public string GetBaseUrl()
+    {
+        return _context.HttpContext!.Request.Host.ToString();
     }
 }

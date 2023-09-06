@@ -24,6 +24,12 @@
     </div>
 
     <div class="form-group mb-3">
+        <label class="form-label">Imagen de producto</label>
+        <InputFile class="form-control" accept="image/jpg" OnChange="OnInputFileChange" />
+        <p class="text-info">Si no quiere actualizar la imagen deje este campo vacio</p>
+    </div>
+
+    <div class="form-group mb-3">
         <label class="form-label">Puntos requeridos</label>
         <InputNumber class="form-control" @bind-Value="_reward.PricePoints" />
         <ValidationMessage For="@(()=> _reward.PricePoints)" />
@@ -53,6 +59,7 @@
 @code {
 
     private UpdateRewardRequest _reward = new UpdateRewardRequest();
+    private long maxFileSize = 1048576;
 
     [Parameter] public string Id { get; set; } = string.Empty;
 
@@ -60,6 +67,17 @@
     [Inject] private SweetAlertService Sweet { get; set; } = null!;
     [Inject] private ILogger<CreateReward> Logger { get; set; } = null!;
     [Inject] private NavigationManager NavigationManager { get; set; } = null!;
+
+    private async Task OnInputFileChange(InputFileChangeEventArgs args)
+    {
+        using var content = new MultipartFormDataContent();
+        var fileContent = new StreamContent(args.File.OpenReadStream(maxFileSize));
+        using var memoryStream = new MemoryStream();
+        await fileContent.CopyToAsync(memoryStream);
+        var base64content = Convert.ToBase64String(memoryStream.ToArray());
+        _reward.Base64Photo = base64content;
+        _reward.ExtentionFile = args.File.ContentType;
+    }
 
     protected override async Task OnInitializedAsync()
     {

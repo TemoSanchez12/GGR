@@ -4,13 +4,13 @@ namespace GGR.Server.Utils;
 
 public static class EmailVerificationBuilder
 {
-    public static string BuildVerificationEmail(User user, string token)
+    public static string BuildVerificationEmail(string baseUrl, string token)
     {
-        return $"Para verificar tu cuenta ingresa al siguiente link: https://localhost:7069/verify-user/{token}";
+        return $"Para verificar tu cuenta ingresa al siguiente link: https://{baseUrl}/verify-user/{token}";
     }
 
-    public static string BuildEmailForRestorePassword(string token)
+    public static string BuildEmailForRestorePassword(string baseUrl, string token)
     {
-        return $"Ingrese al siguiente enlace para actualizar la contraseña https://localhost:7069/reasignar-password/{token}";
+        return $"Ingrese al siguiente enlace para actualizar la contraseña https://{baseUrl}/reasignar-password/{token}";
     }
 }

@@ -3,7 +3,9 @@ using GGR.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using GGR.Server.Commands;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
+using dotenv.net;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +13,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+
+DotEnv.Load(options: new DotEnvOptions(probeForEnv: true));
+Cloudinary cloudinary = new Cloudinary(Environment.GetEnvironmentVariable("CLOUDINARY_URL"));
+cloudinary.Api.Secure = true;
 
 
 // Configuration Data
@@ -24,6 +30,7 @@ builder.Services.AddDbContextFactory<GlobalDbContext>(options =>
 // Configure Auth
 var key = builder.Configuration.GetSection("Jwt").GetSection("Key").Value;
 
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddAuthorization();
 builder.Services.AddAuthentication("Bearer").AddJwtBearer(options =>
 {

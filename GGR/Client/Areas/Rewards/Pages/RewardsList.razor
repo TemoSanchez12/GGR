@@ -54,7 +54,7 @@
                         </Authorized>
                     </AuthorizeView>
                 </tr>
-                
+
             }
         </tbody>
     </table>
@@ -94,6 +94,7 @@ else
             {
                 await RewardClientService.DeleteReward(new GGR.Shared.Reward.DeleteRewardRequest { RewardId = rewardId.ToString() });
                 await LoadRewards();
+                StateHasChanged();
                 await Sweet.FireAsync(new SweetAlertOptions
                     {
                         Title = "Eliminado",

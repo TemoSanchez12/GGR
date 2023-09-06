@@ -7,6 +7,7 @@ public class UpdateRewardRequest
     public string Description { get; set; } = string.Empty;
     public int PricePoints { get; set; }
     public string Base64Photo { get; set; } = string.Empty;
+    public string ExtentionFile { get; set; } = string.Empty;
     public int UnitsAvailable { get; set; }
     public bool IsActive { get; set; } = false;
 }

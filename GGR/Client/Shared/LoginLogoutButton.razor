@@ -1,6 +1,10 @@
 ﻿<AuthorizeView>
 
     <Authorized>
+        <NavLink class="nav-link" href="@Routes.Customer.Index" Match="NavLinkMatch.All">
+            Vista cliente
+        </NavLink>
+
         <button @onclick="Logout" class="btn btn-danger">Cerrar sesión</button>
     </Authorized>
 

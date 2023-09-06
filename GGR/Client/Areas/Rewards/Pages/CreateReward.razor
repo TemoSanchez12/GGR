@@ -21,6 +21,13 @@
         <ValidationMessage For="@(()=> reward.Name)" />
     </div>
 
+
+    <div class="form-group mb-3">
+        <label class="form-label">Imagen de producto</label>
+        <InputFile class="form-control" accept="image/jpg" OnChange="OnInputFileChange" />
+        <ValidationMessage For="@(()=> reward.Name)" />
+    </div>
+
     <div class="form-group mb-3">
         <label class="form-label">Puntos requeridos</label>
         <InputNumber class="form-control" @bind-Value="reward.PricePoints" />
@@ -49,6 +56,7 @@
 
 @code {
     private CreateRewardRequest reward = new CreateRewardRequest();
+    private long maxFileSize = 1048576;
 
     [Inject] private IRewardClientService RewardClientService { get; set; } = null!;
     [Inject] private SweetAlertService Sweet { get; set; } = null!;
@@ -98,5 +106,16 @@
                     Text = "Algo ha salido mal, por favor intentelo de nuevo"
                 });
         }
+    }
+
+    private async Task OnInputFileChange(InputFileChangeEventArgs args)
+    {
+        using var content = new MultipartFormDataContent();
+        var fileContent = new StreamContent(args.File.OpenReadStream(maxFileSize));
+        using var memoryStream = new MemoryStream();
+        await fileContent.CopyToAsync(memoryStream);
+        var base64content = Convert.ToBase64String(memoryStream.ToArray());
+        reward.Base64Photo = base64content;
+        reward.ExtentionFile = args.File.ContentType;
     }
 }
