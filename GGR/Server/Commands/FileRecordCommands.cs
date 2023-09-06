@@ -33,7 +33,7 @@ public class FileRecordCommands : IFileRecordCommands
         _logger.LogInformation("Uploading file {FileName} date: {UploadDate}", file.FileName, DateTime.Now.Date);
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
 
-        if ( dbContext.FileRecords.Any(f => f.UploadedOn.Date == DateTime.Now.Date) )
+        if ( dbContext.FileRecords.Any(f => f.UploadedOn.Date == DateTime.UtcNow.Date) )
         {
             _logger.LogWarning("File already uploaded today");
             throw new Exception(FileRecordError.FileAlreadyUploadedToday.ToString());
@@ -57,7 +57,7 @@ public class FileRecordCommands : IFileRecordCommands
             Id = recordId,
             FileName = trustedFileNameForDisplay,
             FileStorageName = trustedFileNameForFileStorage,
-            UploadedOn = DateTime.Now,
+            UploadedOn = DateTime.UtcNow,
             key = path,
             IsProcessed = false
         };
@@ -140,13 +140,13 @@ public class FileRecordCommands : IFileRecordCommands
 
         var saleTicketsToRemove = await dbContext.SaleTickets
             .Where(ticket => ticket.Status == Data.Models.Utils.SaleTicketStatus.Unchecked
-            && ticket.CreatedAt.AddDays(3) < DateTime.Now).ToListAsync();
+            && ticket.CreatedAt.AddDays(3) < DateTime.UtcNow).ToListAsync();
 
         dbContext.SaleTickets.RemoveRange(saleTicketsToRemove);
 
         var saleTickets = await dbContext.SaleTickets.Include(ticket => ticket.User)
             .Where(ticket => ticket.Status == Data.Models.Utils.SaleTicketStatus.Unchecked
-            && ticket.CreatedAt.AddDays(3) > DateTime.Now).ToListAsync();
+            && ticket.CreatedAt.AddDays(3) > DateTime.UtcNow).ToListAsync();
 
         foreach ( var ticket in saleTickets )
         {
@@ -177,7 +177,7 @@ public class FileRecordCommands : IFileRecordCommands
         _logger.LogInformation("Uploading file date: {UploadDate}", DateTime.Now.Date);
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
 
-        if ( request.DateForRecord > DateTime.Now )
+        if ( request.DateForRecord > DateTime.UtcNow )
             throw new Exception(FileRecordError.FileDatePassToday.ToString());
 
         if ( dbContext.FileRecords.Any(f => f.FileName == request.DateForRecord.ToString("dd-MM-yyyy")) )
@@ -197,7 +197,7 @@ public class FileRecordCommands : IFileRecordCommands
             Id = recordId,
             FileName = trustedFileNameForDisplay,
             FileStorageName = trustedFileNameForFileStorage,
-            UploadedOn = DateTime.Now,
+            UploadedOn = DateTime.UtcNow,
             key = path,
             IsProcessed = false
         };
