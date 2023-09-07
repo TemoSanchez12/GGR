@@ -57,7 +57,8 @@ public class SaleTicketCommands : ISaleTicketCommands
         {
             Id = saleTicketId,
             Folio = request.Folio,
-            User = user
+            User = user,
+            CreatedAt = DateTime.UtcNow
         };
 
         dbContext.SaleTickets.Add(saleTicket);
