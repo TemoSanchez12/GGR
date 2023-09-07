@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Repos\\GGR\\GGR\\Shared\\GGR.Shared.csproj": {}
+    "d:\\Repos\\GGR\\GGR\\Shared\\GGR.Shared.csproj": {}
   },
   "projects": {
-    "D:\\Repos\\GGR\\GGR\\Shared\\GGR.Shared.csproj": {
+    "d:\\Repos\\GGR\\GGR\\Shared\\GGR.Shared.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Repos\\GGR\\GGR\\Shared\\GGR.Shared.csproj",
+        "projectUniqueName": "d:\\Repos\\GGR\\GGR\\Shared\\GGR.Shared.csproj",
         "projectName": "GGR.Shared",
-        "projectPath": "D:\\Repos\\GGR\\GGR\\Shared\\GGR.Shared.csproj",
+        "projectPath": "d:\\Repos\\GGR\\GGR\\Shared\\GGR.Shared.csproj",
         "packagesPath": "C:\\Users\\temos\\.nuget\\packages\\",
-        "outputPath": "D:\\Repos\\GGR\\GGR\\Shared\\obj\\",
+        "outputPath": "d:\\Repos\\GGR\\GGR\\Shared\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\temos\\AppData\\Roaming\\NuGet\\NuGet.Config",
