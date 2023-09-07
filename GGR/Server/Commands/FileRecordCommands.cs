@@ -33,13 +33,13 @@ public class FileRecordCommands : IFileRecordCommands
         _logger.LogInformation("Uploading file {FileName} date: {UploadDate}", file.FileName, DateTime.Now.Date);
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
 
-        if ( dbContext.FileRecords.Any(f => f.UploadedOn.Date == DateTime.UtcNow.Date) )
+        if (dbContext.FileRecords.Any(f => f.UploadedOn.Date == DateTime.UtcNow.Date))
         {
             _logger.LogWarning("File already uploaded today");
             throw new Exception(FileRecordError.FileAlreadyUploadedToday.ToString());
         }
 
-        if ( file.ContentType.Split('/')[1] != "csv" )
+        if (file.ContentType.Split('/')[1] != "csv")
         {
             _logger.LogWarning("File is not a csv file");
             throw new Exception(FileRecordError.FileIsNotCsv.ToString());
@@ -49,7 +49,7 @@ public class FileRecordCommands : IFileRecordCommands
         var trustedFileNameForFileStorage = $"{DateTime.Now.ToString("dd-MM-yyyy")}.{file.ContentType.Split('/')[1]}";
         var untrustedFileName = file.FileName;
         var trustedFileNameForDisplay = WebUtility.HtmlEncode(untrustedFileName);
-        var path = Path.Combine(_env.ContentRootPath, "FileRecords", trustedFileNameForFileStorage);
+        var path = Path.Combine(_env.ContentRootPath, "../FileRecords", trustedFileNameForFileStorage);
 
         var recordId = Guid.NewGuid();
         var fileRecord = new FileRecord
@@ -70,7 +70,7 @@ public class FileRecordCommands : IFileRecordCommands
             await dbContext.FileRecords.AddAsync(fileRecord);
             await dbContext.SaveChangesAsync();
         }
-        catch ( Exception ex )
+        catch (Exception ex)
         {
             _logger.LogError(ex, "Error saving file record to database");
             throw new Exception(FileRecordError.ErrorSavingFileRecordToDatabase.ToString());
@@ -80,7 +80,7 @@ public class FileRecordCommands : IFileRecordCommands
         {
             await _emailSender.SendEmailAsync(null, $"Archivo de ventas cargado {DateTime.Now.ToString("dd-MM-yyyy")}", $"Se ha subido el archivo de ventas {DateTime.Now}");
         }
-        catch ( Exception ex )
+        catch (Exception ex)
         {
             _logger.LogError(ex, "Error sending email");
             throw new Exception(FileRecordError.ErrorSendingEmail.ToString());
@@ -106,7 +106,7 @@ public class FileRecordCommands : IFileRecordCommands
         var fileRecord = await dbContext.FileRecords
             .FirstOrDefaultAsync(fileRecord => fileRecord.Id == FileRecordId);
 
-        if ( fileRecord == null )
+        if (fileRecord == null)
             throw new Exception(FileRecordError.FileNotFound.ToString());
 
         var saleRecords = new List<SaleRecord>();
@@ -115,9 +115,9 @@ public class FileRecordCommands : IFileRecordCommands
         var csvFileRecord = readCsv.Split("\n").ToList();
         csvFileRecord.RemoveAt(0);
 
-        foreach ( var row in csvFileRecord )
+        foreach (var row in csvFileRecord)
         {
-            if ( !string.IsNullOrEmpty(row) )
+            if (!string.IsNullOrEmpty(row))
             {
                 var cells = row.Split(',');
                 _logger.LogInformation("Saving file record for ticket {Folio}", cells[0]);
@@ -148,7 +148,7 @@ public class FileRecordCommands : IFileRecordCommands
             .Where(ticket => ticket.Status == Data.Models.Utils.SaleTicketStatus.Unchecked
             && ticket.CreatedAt.AddDays(3) > DateTime.UtcNow).ToListAsync();
 
-        foreach ( var ticket in saleTickets )
+        foreach (var ticket in saleTickets)
         {
             _logger.LogInformation("Register information for ticket folio {Folio} for client {UserId}",
                 ticket.Folio, ticket.User.Id);
@@ -156,10 +156,10 @@ public class FileRecordCommands : IFileRecordCommands
             var saleRecord = await dbContext.SaleRecords
                 .FirstOrDefaultAsync(record => record.Folio == ticket.Folio);
 
-            if ( saleRecord == null )
+            if (saleRecord == null)
                 continue;
 
-            ticket.Points = (int) saleRecord.Amount * 20;
+            ticket.Points = (int)saleRecord.Amount * 20;
             ticket.Amount = saleRecord.Amount;
             ticket.Liters = saleRecord.Amount / 20;
             ticket.Status = Data.Models.Utils.SaleTicketStatus.Checked;
@@ -177,10 +177,10 @@ public class FileRecordCommands : IFileRecordCommands
         _logger.LogInformation("Uploading file date: {UploadDate}", DateTime.Now.Date);
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
 
-        if ( request.DateForRecord > DateTime.UtcNow )
+        if (request.DateForRecord > DateTime.UtcNow)
             throw new Exception(FileRecordError.FileDatePassToday.ToString());
 
-        if ( dbContext.FileRecords.Any(f => f.FileName == request.DateForRecord.ToString("dd-MM-yyyy")) )
+        if (dbContext.FileRecords.Any(f => f.FileName == request.DateForRecord.ToString("dd-MM-yyyy")))
         {
             _logger.LogWarning("File already uploaded today");
             throw new Exception(FileRecordError.FileAlreadyUploadedForThatDate.ToString());
@@ -189,7 +189,7 @@ public class FileRecordCommands : IFileRecordCommands
         var trustedFileNameForFileStorage = $"{request.DateForRecord.ToString("dd-MM-yyyy")}.csv";
         var untrustedFileName = request.DateForRecord.ToString("dd-MM-yyyy");
         var trustedFileNameForDisplay = WebUtility.HtmlEncode(untrustedFileName);
-        var path = Path.Combine(_env.ContentRootPath, "FileRecords", trustedFileNameForFileStorage);
+        var path = Path.Combine(_env.ContentRootPath, "out/FileRecords", trustedFileNameForFileStorage);
 
         var recordId = Guid.NewGuid();
         var fileRecord = new FileRecord
@@ -212,7 +212,7 @@ public class FileRecordCommands : IFileRecordCommands
             await dbContext.FileRecords.AddAsync(fileRecord);
             await dbContext.SaveChangesAsync();
         }
-        catch ( Exception ex )
+        catch (Exception ex)
         {
             _logger.LogError(ex, "Error saving file record to database");
             throw new Exception(FileRecordError.ErrorSavingFileRecordToDatabase.ToString());
@@ -222,7 +222,7 @@ public class FileRecordCommands : IFileRecordCommands
         {
             await _emailSender.SendEmailAsync(null, $"Archivo de ventas cargado {DateTime.Now.ToString("dd-MM-yyyy")}", $"Se ha subido el archivo de ventas {DateTime.Now}");
         }
-        catch ( Exception ex )
+        catch (Exception ex)
         {
             _logger.LogError(ex, "Error sending email");
             throw new Exception(FileRecordError.ErrorSendingEmail.ToString());
@@ -249,7 +249,7 @@ public class FileRecordCommands : IFileRecordCommands
         var fileRecordsWithoutProcessing = await dbContext.FileRecords
             .Where(f => !f.IsProcessed).ToArrayAsync();
 
-        foreach ( var fileRecord in fileRecordsWithoutProcessing )
+        foreach (var fileRecord in fileRecordsWithoutProcessing)
         {
             _logger.LogInformation("Checking tickets from file {FileId} {FileName}", fileRecord.Id, fileRecord.FileName);
             await CheckTicketFromFile(fileRecord.Id);

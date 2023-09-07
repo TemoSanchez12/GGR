@@ -42,7 +42,7 @@ public class RewardCommands : IRewardCommands
 
         var reward = await dbContext.Rewards.FirstOrDefaultAsync(r => r.Id == rewardId && r.Name != null);
 
-        if ( reward == null )
+        if (reward == null)
             throw new Exception(RewardError.RewardNotFound.ToString());
 
         return reward;
@@ -53,13 +53,13 @@ public class RewardCommands : IRewardCommands
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
 
-        if ( dbContext.Rewards.Any(reward => reward.Name == request.Name) )
+        if (dbContext.Rewards.Any(reward => reward.Name == request.Name))
             throw new Exception(RewardError.RewardAlreadyExists.ToString());
 
         var rewardId = Guid.NewGuid();
 
         var fileName = $"{rewardId}.jpeg";
-        var path = Path.Combine(_env.ContentRootPath, "ImageRewards", fileName);
+        var path = Path.Combine(_env.ContentRootPath, "../ImageRewards", fileName);
 
         var reward = new Reward
         {
@@ -71,7 +71,7 @@ public class RewardCommands : IRewardCommands
             UnitsAvailable = request.UnitsAvailable
         };
 
-        using ( var stream = new FileStream(path, FileMode.Create) )
+        using (var stream = new FileStream(path, FileMode.Create))
         {
             var bytes = Convert.FromBase64String(request.Base64Photo);
             var content = new StreamContent(new MemoryStream(bytes));
@@ -92,7 +92,7 @@ public class RewardCommands : IRewardCommands
             dbContext.Rewards.Add(reward);
             await dbContext.SaveChangesAsync();
         }
-        catch ( Exception ex )
+        catch (Exception ex)
         {
             _logger.LogError("Something went wrong while saving reward {ErrorMessage}", ex.Message);
             throw new Exception(RewardError.SavingDataError.ToString());
@@ -108,7 +108,7 @@ public class RewardCommands : IRewardCommands
         var reward = await dbContext.Rewards
             .FirstOrDefaultAsync(reward => reward.Id == Guid.Parse(request.RewardId));
 
-        if ( reward == null )
+        if (reward == null)
             throw new Exception(RewardError.RewardNotFound.ToString());
 
         reward.Name = request.Name;
@@ -117,12 +117,12 @@ public class RewardCommands : IRewardCommands
         reward.Status = request.IsActive ? RewardStatus.Available : RewardStatus.NotAvailable;
         reward.UnitsAvailable = request.UnitsAvailable;
 
-        if ( !string.IsNullOrEmpty(request.Base64Photo) )
+        if (!string.IsNullOrEmpty(request.Base64Photo))
         {
             var fileName = $"{reward.Id}.jpeg";
-            var path = Path.Combine(_env.ContentRootPath, "ImageRewards", fileName);
+            var path = Path.Combine(_env.ContentRootPath, "out/ImageRewards", fileName);
 
-            using ( var stream = new FileStream(path, FileMode.Create) )
+            using (var stream = new FileStream(path, FileMode.Create))
             {
                 var bytes = Convert.FromBase64String(request.Base64Photo);
                 var content = new StreamContent(new MemoryStream(bytes));
@@ -143,7 +143,7 @@ public class RewardCommands : IRewardCommands
         {
             await dbContext.SaveChangesAsync();
         }
-        catch ( Exception ex )
+        catch (Exception ex)
         {
             _logger.LogError("Something went wrong while saving the update reward: {ErrorMessage}", ex.Message);
             throw new Exception(RewardError.SavingDataError.ToString());
@@ -157,7 +157,7 @@ public class RewardCommands : IRewardCommands
         var reward = await dbContext.Rewards
           .FirstOrDefaultAsync(reward => reward.Id == Guid.Parse(request.RewardId));
 
-        if ( reward == null )
+        if (reward == null)
             throw new Exception(RewardError.RewardNotFound.ToString());
 
         File.Delete(reward.PhotoUrl);
@@ -168,7 +168,7 @@ public class RewardCommands : IRewardCommands
         {
             await dbContext.SaveChangesAsync();
         }
-        catch ( Exception ex )
+        catch (Exception ex)
         {
             _logger.LogError("Something went wrong while removing reward {ErrorMessage}", ex.Message);
             throw new Exception(RewardError.SavingDataError.ToString());
