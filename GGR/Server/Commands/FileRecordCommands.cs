@@ -189,7 +189,7 @@ public class FileRecordCommands : IFileRecordCommands
         var trustedFileNameForFileStorage = $"{request.DateForRecord.ToString("dd-MM-yyyy")}.csv";
         var untrustedFileName = request.DateForRecord.ToString("dd-MM-yyyy");
         var trustedFileNameForDisplay = WebUtility.HtmlEncode(untrustedFileName);
-        var path = Path.Combine(_env.ContentRootPath, "out/FileRecords", trustedFileNameForFileStorage);
+        var path = Path.Combine(_env.ContentRootPath, "../FileRecords", trustedFileNameForFileStorage);
 
         var recordId = Guid.NewGuid();
         var fileRecord = new FileRecord
