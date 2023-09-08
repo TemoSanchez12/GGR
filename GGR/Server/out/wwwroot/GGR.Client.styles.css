@@ -5,18 +5,19 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: #FCF4E8;
+  background-color: #F8F7F7;
   padding: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: min(90%, 400px);
+  width: min(90%, 600px);
   border-radius: 10px;
 }
 
 .modal-form-welcome[b-tsdvsfc0d0] {
-  color: #6400C8;
+  color: #AD1917;
   font-size: 22px;
+  font-weight: 600;
 }
 
 .form-customer-input[b-tsdvsfc0d0] {
@@ -25,7 +26,7 @@
 
 .form-customer-label[b-tsdvsfc0d0] {
   font-size: 14px;
-  color: #808080;
+  color: #333;
 }
 
 .form-customer-control[b-tsdvsfc0d0] {
@@ -42,7 +43,7 @@
 
 .form-customer-submit-button[b-tsdvsfc0d0] {
   text-align: center;
-  background-color: #7A5EEA;
+  background-color: #AD1917;
   margin: 0 auto;
   color: white;
   border: none;
@@ -59,11 +60,12 @@
   gap: 30px;
 }
 
-  .form-customer-links a[b-tsdvsfc0d0] {
-    color: black;
-    text-decoration: none;
-    font-size: 12px;
-  }
+.form-customer-links a[b-tsdvsfc0d0] {
+  color: black;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+}
 /* /Areas/Customer/Pages/RegisterCustomer.razor.rz.scp.css */
 
 .modal-form-container[b-sl2o1xfkpl] {
@@ -71,18 +73,19 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: #FCF4E8;
+  background-color: #F8F7F7;
   padding: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: min(90%, 500px);
+  width: min(90%, 600px);
   border-radius: 10px;
 }
 
 .modal-form-welcome[b-sl2o1xfkpl] {
-  color: #6400C8;
+  color: #AD1917;
   font-size: 22px;
+  font-weight: 600;
 }
 
 .form-customer-input[b-sl2o1xfkpl] {
@@ -91,7 +94,7 @@
 
 .form-customer-label[b-sl2o1xfkpl] {
   font-size: 14px;
-  color: #808080;
+  color: #333;
 }
 
 .form-customer-control[b-sl2o1xfkpl] {
@@ -108,7 +111,7 @@
 
 .form-customer-submit-button[b-sl2o1xfkpl] {
   text-align: center;
-  background-color: #7A5EEA;
+  background-color: #AD1917;
   margin: 0 auto;
   color: white;
   border: none;
@@ -128,7 +131,8 @@
   .form-customer-links a[b-sl2o1xfkpl] {
     color: black;
     text-decoration: none;
-    font-size: 12px;
+    font-size: 14px;
+    font-weight: 600;
   }
 /* /Areas/Customer/Pages/RequestResetPasswordRequest.razor.rz.scp.css */
 .modal-form-container[b-2wpac6x3xj] {
@@ -262,9 +266,6 @@
   }
 /* /Shared/CustomerLayout.razor.rz.scp.css */
 .page-customer[b-xjj0h2ufhc] {
-  height: 100vh;
-  overflow-y: scroll;
-  background-image: linear-gradient(to right, #fad0c4 0%, #ffd1ff 100%);
   font-family: 'Montserrat', sans-serif;
 }
 
@@ -433,10 +434,15 @@ main[b-6i3e8ur8u5] {
   overflow: hidden;
   margin: 0 auto;
   align-items: center;
+  width: min(95%, 1200px);
+}
+
+.navbar-container[b-t8wighfo3y] {
+  background-color: #AD1917;
 }
 
 .navbar-link[b-t8wighfo3y] {
-  color: black;
+  font-weight: 500;
   text-decoration: none;
 }
 
