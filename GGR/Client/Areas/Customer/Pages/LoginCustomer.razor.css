@@ -4,18 +4,19 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: #FCF4E8;
+  background-color: #F8F7F7;
   padding: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: min(90%, 400px);
+  width: min(90%, 600px);
   border-radius: 10px;
 }
 
 .modal-form-welcome {
-  color: #6400C8;
+  color: #AD1917;
   font-size: 22px;
+  font-weight: 600;
 }
 
 .form-customer-input {
@@ -24,7 +25,7 @@
 
 .form-customer-label {
   font-size: 14px;
-  color: #808080;
+  color: #333;
 }
 
 .form-customer-control {
@@ -41,7 +42,7 @@
 
 .form-customer-submit-button {
   text-align: center;
-  background-color: #7A5EEA;
+  background-color: #AD1917;
   margin: 0 auto;
   color: white;
   border: none;
@@ -58,8 +59,9 @@
   gap: 30px;
 }
 
-  .form-customer-links a {
-    color: black;
-    text-decoration: none;
-    font-size: 12px;
-  }
+.form-customer-links a {
+  color: black;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+}

@@ -1,0 +1,188 @@
+﻿@layout CustomerLayout
+@using GGR.Client.Areas.Rewards.Models;
+@using GGR.Client.Areas.Rewards.Utils;
+@using GGR.Client.Areas.Rewards.Services.Contracts;
+@using GGR.Client.Areas.Customer.Components;
+@using GGR.Client.Areas.Users.Models;
+@using GGR.Client.Areas.Users.Services.Contract;
+@using GGR.Client.Areas.Users.Utils;
+@using System.Security.Claims;
+@using GGR.Shared.RewardClaim;
+@using GGR.Client.Areas.RewardClaim.Services.Contracts;
+
+@inject IRewardClaimClientService RewardClaimClientService;
+@inject IRewardClientService RewardClientService;
+@inject IUserClientService UserClientService;
+@inject SweetAlertService Sweet;
+@inject NavigationManager NavigationManager;
+@inject ILogger<Index> Logger;
+@inject AuthenticationStateProvider AuthStateProvider;
+
+
+@attribute [Authorize(Roles = "Admin, Editor, Client")]
+@attribute [Route(Routes.Customer.CustomerRewardList)]
+
+<section class="mt-5">
+    @if ( Rewards.Any() )
+    {
+        <ul style="width: 100%; display: flex; flex-wrap: wrap; justify-content: space-between;" class="p-0">
+            @foreach ( var reward in Rewards )
+            {
+                <li style="list-style: none; margin-bottom: 40px; width: 430px;">
+                    <div style="background: #F8F7F7; border-radius: 10px; overflow: hidden; display: flex; height: 170px;">
+
+                        <img src="@reward.PhotoUrl" alt="@reward.Name" style="width: 35%; aspect-ratio: 1/1; object-fit: cover;" />
+
+                        <div class="p-2 d-flex flex-column justify-content-between">
+
+                            <div>
+                                <h3 style="font-weight: 500; font-size: 18px;">@reward.Name</h3>
+                                <div style="width: 100%; height: 4px; border-radius: 5px; background: #AD1917;"></div>
+                                <p style="font-size: 14px;">@reward.Description</p>
+                            </div>
+
+                            <div>
+                                <p class="m-0">Puntos requeridos: <span style="font-weight: 600;">@reward.PricePoints</span></p>
+
+                                <div style="display: flex; gap: 10px;">
+                                    @if ( reward.UnitsAvailable > 0 )
+                                    {
+                                        <p class="m-0 rounded" style="background: #32B065; color: #FFF8E7; padding: 4px 8px; font-size: 12px;">Disponible</p>
+                                        <button @onclick="(async () => await ClaimRewardHandler(reward.Id))" class="m-0 rounded border-0" style="background: #AD1917; color: #F8F7F7; padding: 4px 8px; font-size: 12px;">
+                                            Obtener recompensa
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <p class="m-0 rounded" style="background: #F47174; color: #FFF8E7; padding: 4px 8px; font-size: 12px;">No disponible</p>
+                                    }
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </li>
+            }
+        </ul>
+    }
+    else if ( !Rewards.Any() && loadingRewards )
+    {
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <div class="spinner-border" role="status">
+            </div>
+            <span class="sr-only">Cargando recompensas...</span>
+        </div>
+    }
+    else
+    {
+        <p>No se han encontrado recompensas</p>
+    }
+</section>
+
+@code {
+    private bool loadingRewards = false;
+    private List<Reward> Rewards = new List<Reward>();
+    private string Id = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var claims = authState.User.Claims;
+        Id = claims.First(claim => claim.Type == ClaimTypes.UserData).Value;
+
+        loadingRewards = true;
+        await LoadRewards();
+        loadingRewards = false;
+    }
+
+    private async Task LoadRewards()
+    {
+        var response = await RewardClientService.GetAllRewards();
+
+        if ( response.Data == null )
+        {
+            var toast = Sweet.Mixin(new SweetAlertOptions
+                {
+                    Toast = true,
+                    TimerProgressBar = true,
+                    Position = "top-end",
+                    ShowConfirmButton = false,
+                    Timer = 3000,
+                });
+
+            await toast.FireAsync(new SweetAlertOptions
+                {
+                    Icon = "error",
+                    Title = response.Message
+                });
+        }
+        else
+        {
+            Rewards = response.Data.Rewards.Select(reward => RewardMapper.MapToEntity(reward)).ToList();
+        }
+    }
+
+    private async Task ClaimRewardHandler(Guid rewardId)
+    {
+        var reward = Rewards.FirstOrDefault(r => r.Id == rewardId);
+
+        if ( reward == null )
+            return;
+
+        var result = await Sweet.FireAsync(new SweetAlertOptions
+            {
+                Title = "¿Esta seguro de que desea reclamar esta recompensa?",
+                Text = $"Se le descontarán {reward.PricePoints} puntos",
+                Icon = SweetAlertIcon.Warning,
+                ShowCancelButton = true,
+                ConfirmButtonText = "Si, reclamar",
+                CancelButtonText = "No, no reclamar"
+            });
+
+        if ( !result.IsConfirmed )
+            return;
+
+        var toast = Sweet.Mixin(new SweetAlertOptions
+            {
+                Toast = true,
+                TimerProgressBar = true,
+                Position = "top-end",
+                ShowConfirmButton = false,
+                Timer = 3000,
+            });
+
+        try
+        {
+            var request = new CreateRewardClaimRequest { UserId = Id, RewardId = rewardId.ToString() };
+            var response = await RewardClaimClientService.CreateRewardClaim(request);
+
+            if ( response.Success )
+            {
+                StateHasChanged();
+                await toast.FireAsync(new SweetAlertOptions
+                    {
+                        Icon = "success",
+                        Title = response.Message
+                    });
+            }
+            else
+            {
+                await toast.FireAsync(new SweetAlertOptions
+                    {
+                        Icon = "error",
+                        Title = response.Message
+                    });
+            }
+
+        }
+        catch ( Exception ex )
+        {
+            await toast.FireAsync(new SweetAlertOptions
+                {
+                    Icon = "error",
+                    Title = "Algo ha salido mal al reclamar la recompensa"
+                });
+        }
+    }
+
+}

@@ -15,6 +15,7 @@ public static class Routes
         public const string RegisterCustomer = "/registrarse";
         public const string ResetPasswordRequest = "/recupear-password";
         public const string RestorePassword = "/reasignar-password/{Token}";
+        public const string CustomerRewardList = "/catalogo";
     }
 
     public static class User

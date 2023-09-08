@@ -1,7 +1,4 @@
 ﻿.page-customer {
-  height: 100vh;
-  overflow-y: scroll;
-  background-image: linear-gradient(to right, #fad0c4 0%, #ffd1ff 100%);
   font-family: 'Montserrat', sans-serif;
 }
 

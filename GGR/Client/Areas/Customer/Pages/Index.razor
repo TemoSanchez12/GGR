@@ -21,87 +21,43 @@
 @attribute [Authorize(Roles = "Admin, Editor, Client")]
 @attribute [Route(Routes.Customer.Index)]
 
-<section class="d-flex flex-row-reverse justify-content-between" style="margin-top: 80px;">
-    <div class="" style="">
+<section class="" style="margin-top: 100px;">
+    <div class="d-flex justify-content-between gap-4" style="">
         @if ( loadingUser )
         {
             <div style="display: flex; align-items: center; gap: 20px;">
                 <div class="spinner-border" role="status">
                 </div>
-                <span class="sr-only">Cargando puntos...</span>
+                <span class="sr-only">Cargando datos de usuarios...</span>
             </div>
         }
         else
         {
-            <p style="background: #FFF8E7; border-radius: 10px; font-weight: 600;" class="px-3 py-2">Tus puntos: @User.Points</p>
+            <div>
+              <h3>Bienvenido @User.Name</h3>
+
+                <p class="h5" style="margin: 30px 0;">Tienes <span style="font-weight: bold;">@User.Points</span> acumulados</p>
+
+              <button @onclick="ShowRegisterTicketModal" class="px-2 py-1 border-0 rounded text-white" style="background-color: #333;">
+                  Registrar ticket
+              </button>
+            </div>
+
+            <div style="width: 50%;">
+              <img src="/gas-statition-image-index.png" alt="Gasolineras GGR" style="width: 100%;" />
+            </div>
         }
     </div>
 
-    @if ( Rewards.Any() )
-    {
-        <ul style="width: min(90%, 500px);" class="p-0">
-            @foreach ( var reward in Rewards )
-            {
-                <li style="list-style: none; margin-bottom: 40px;">
-                    <div style="background: #FFF8E7; border-radius: 10px; overflow: hidden; display: flex; height: 170px;">
-
-                        <img src="@reward.PhotoUrl" alt="@reward.Name" style="height: 100%; aspect-ratio: 1/1; object-fit: cover;" />
-
-                        <div class="p-2 d-flex flex-column justify-content-between">
-
-                            <div>
-                                <h3 style="font-weight: 500; font-size: 18px;">@reward.Name</h3>
-                                <div style="width: 100%; height: 4px; border-radius: 5px; background: #7A5EEA;"></div>
-                                <p style="font-size: 14px;">@reward.Description</p>
-                            </div>
-
-                            <div>
-                                <p class="m-0">Puntos requeridos: <span style="font-weight: 600;">@reward.PricePoints</span></p>
-
-                                <div style="display: flex; gap: 10px;">
-                                    @if ( reward.UnitsAvailable > 0 )
-                                    {
-                                        <p class="m-0 rounded" style="background: #32B065; color: #FFF8E7; padding: 4px 8px; font-size: 12px;">Disponible</p>
-                                        <button @onclick="(async () => await ClaimRewardHandler(reward.Id))" class="m-0 rounded border-0" style="background: #9ab8f7; color: #FFF8E7; padding: 4px 8px; font-size: 12px;">
-                                            Obtener recompensa
-                                        </button>
-                                    }
-                                    else
-                                    {
-                                        <p class="m-0 rounded" style="background: #F47174; color: #FFF8E7; padding: 4px 8px; font-size: 12px;">No disponible</p>
-                                    }
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-                </li>
-            }
-        </ul>
-    }
-    else if ( !Rewards.Any() && loadingRewards )
-    {
-        <div style="display: flex; align-items: center; gap: 20px;">
-            <div class="spinner-border" role="status">
-            </div>
-            <span class="sr-only">Cargando recompensas...</span>
-        </div>
-    }
-    else
-    {
-        <p>No se han encontrado recompensas</p>
-    }
+    
 </section>
 
-<button @onclick="ShowRegisterTicketModal" class="position-absolute px-2 py-1 border-0 rounded text-white" style="background-color: #7A5EEA; bottom: 30px; right: 30px;">
-    Registrar ticket
-</button>
+
 
 <RegisterTicketModal Open="@Open" OnCloseModal="@HideRegisterTicketModal" />
 
 
 @code {
-    private List<Reward> Rewards = new List<Reward>();
     private User User { get; set; } = new User();
     private string Id { get; set; } = string.Empty;
 
@@ -117,7 +73,6 @@
 
         loadingRewards = true;
         loadingUser = true;
-        await LoadRewards();
         await LoadUser();
         loadingRewards = false;
         loadingUser = false;
@@ -155,97 +110,6 @@
                 {
                     Icon = "error",
                     Title = "Algo ha salido mal, por favor intentelo de nuevo"
-                });
-        }
-    }
-
-    private async Task LoadRewards()
-    {
-        var response = await RewardClientService.GetAllRewards();
-
-        if ( response.Data == null )
-        {
-            var toast = Sweet.Mixin(new SweetAlertOptions
-                {
-                    Toast = true,
-                    TimerProgressBar = true,
-                    Position = "top-end",
-                    ShowConfirmButton = false,
-                    Timer = 3000,
-                });
-
-            await toast.FireAsync(new SweetAlertOptions
-                {
-                    Icon = "error",
-                    Title = response.Message
-                });
-        }
-        else
-        {
-            Rewards = response.Data.Rewards.Select(reward => RewardMapper.MapToEntity(reward)).ToList();
-        }
-    }
-
-    private async Task ClaimRewardHandler(Guid rewardId)
-    {
-        var reward = Rewards.FirstOrDefault(r => r.Id == rewardId);
-
-        if ( reward == null )
-            return;
-
-        var result = await Sweet.FireAsync(new SweetAlertOptions
-            {
-                Title = "¿Esta seguro de que desea reclamar esta recompensa?",
-                Text = $"Se le descontarán {reward.PricePoints} puntos",
-                Icon = SweetAlertIcon.Warning,
-                ShowCancelButton = true,
-                ConfirmButtonText = "Si, reclamar",
-                CancelButtonText = "No, no reclamar"
-            });
-
-        if ( !result.IsConfirmed )
-            return;
-
-        var toast = Sweet.Mixin(new SweetAlertOptions
-            {
-                Toast = true,
-                TimerProgressBar = true,
-                Position = "top-end",
-                ShowConfirmButton = false,
-                Timer = 3000,
-            });
-
-        try
-        {
-            var request = new CreateRewardClaimRequest { UserId = Id, RewardId = rewardId.ToString() };
-            var response = await RewardClaimClientService.CreateRewardClaim(request);
-
-            if ( response.Success )
-            {
-                await LoadUser();
-                StateHasChanged();
-                await toast.FireAsync(new SweetAlertOptions
-                    {
-                        Icon = "success",
-                        Title = response.Message
-                    });
-            }
-            else
-            {
-                await toast.FireAsync(new SweetAlertOptions
-                    {
-                        Icon = "error",
-                        Title = response.Message
-                    });
-            }
-
-        }
-        catch ( Exception ex )
-        {
-            await toast.FireAsync(new SweetAlertOptions
-                {
-                    Icon = "error",
-                    Title = "Algo ha salido mal al reclamar la recompensa"
                 });
         }
     }

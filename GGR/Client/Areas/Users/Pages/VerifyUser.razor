@@ -96,7 +96,7 @@ else
         {
             Logger.LogInformation("Sending request for verify user with token {Token}", token);
             await UserClientService.RestoreVerifyToken(restoreTokenRequest);
-            NavigationManager.NavigateTo(Routes.User.LoginPage);
+            NavigationManager.NavigateTo(Routes.Customer.LoginCustomer);
             await toast.FireAsync(new SweetAlertOptions
                 {
                     Icon = "success",

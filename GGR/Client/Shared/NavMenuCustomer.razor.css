@@ -4,10 +4,15 @@
   overflow: hidden;
   margin: 0 auto;
   align-items: center;
+  width: min(95%, 1200px);
+}
+
+.navbar-container {
+  background-color: #AD1917;
 }
 
 .navbar-link {
-  color: black;
+  font-weight: 500;
   text-decoration: none;
 }
 

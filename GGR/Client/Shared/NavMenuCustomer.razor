@@ -6,10 +6,11 @@
 @inject AuthenticationStateProvider AuthStateProvider;
 @inject SweetAlertService Sweet;
 
-<div>
+<div class="navbar-container">
     <nav class="navbar">
+
         <div>
-            <NavLink class="text-decoration-none text-black" href="@Routes.Customer.Index" Match="NavLinkMatch.All">
+            <NavLink class="text-decoration-none text-white" href="@Routes.Customer.Index" Match="NavLinkMatch.All">
                 <span>GGR</span>
             </NavLink>
         </div>
@@ -17,22 +18,30 @@
         <div style="display: flex; gap: 50px; align-items: center;">
             <AuthorizeView Roles="Admin, Editor">
                 <Authorized>
-                    <NavLink class="text-decoration-none text-black" href="@Routes.Dashboard" Match="NavLinkMatch.All">
+                    <NavLink class="text-decoration-none text-white navbar-link" href="@Routes.Dashboard" Match="NavLinkMatch.All">
                         Administración
                     </NavLink>
                 </Authorized>
             </AuthorizeView>
 
 
-            <NavLink class="text-decoration-none text-black" href="@Routes.Customer.Profile" Match="NavLinkMatch.All">
+            <NavLink class="text-decoration-none text-white navbar-link" href="@Routes.Customer.Index" Match="NavLinkMatch.All">
+                Inicio
+            </NavLink>
+            
+            <NavLink class="text-decoration-none text-white navbar-link" href="@Routes.Customer.Profile" Match="NavLinkMatch.All">
                 Perfil
             </NavLink>
 
-            <NavLink class="text-decoration-none text-black" href="@Routes.Customer.ClaimedRewards" Match="NavLinkMatch.All">
-                Recompensas reclamadas
+            <NavLink class="text-decoration-none text-white navbar-link" href="@Routes.Customer.CustomerRewardList" Match="NavLinkMatch.All">
+                Catálogo
             </NavLink>
 
-            <button @onclick="Logout" class="rounded px-3 py-1 text-white text-decoration-none border-0" style="background: #7A5EEA;" href="@Routes.Reward.RewardsList" Match="NavLinkMatch.All">
+            <NavLink class="text-decoration-none text-white navbar-link" href="@Routes.Customer.ClaimedRewards" Match="NavLinkMatch.All">
+                Mis premios
+            </NavLink>
+
+            <button @onclick="Logout" class="rounded px-3 py-1 text-white text-decoration-none border-0" style="background: #333;" href="@Routes.Reward.RewardsList" Match="NavLinkMatch.All">
                 Cerrar sesión
             </button>
         </div>
