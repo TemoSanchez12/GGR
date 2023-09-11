@@ -1,14 +1,15 @@
 ﻿.navbar {
-  height: 80px;
+  min-height: 80px;
   display: flex;
   overflow: hidden;
   margin: 0 auto;
   align-items: center;
   width: min(95%, 1200px);
+  flex-direction: column;
 }
 
 .navbar-container {
-  background-color: #AD1917;
+  background-color: #ad1917;
 }
 
 .navbar-link {
@@ -23,4 +24,42 @@
 .navbar-links {
   display: flex;
   gap: 20px;
+}
+
+.button-toggle {
+  display: block;
+  color: white;
+  background: transparent;
+  border: none;
+}
+
+.logo-container {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.responsive-navbar {
+  margin-top: 30px;
+  flex-direction: column;
+}
+
+@media (min-width: 1000px) {
+  .navbar {
+    flex-direction: row;
+  }
+
+  .responsive-navbar {
+    flex-direction: row;
+    margin-top: 0;
+    display: flex !important;
+  }
+
+  .button-toggle {
+    display: none;
+  }
+
+  .logo-container {
+    width: auto;
+  }
 }

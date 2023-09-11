@@ -34,6 +34,15 @@
         </div>
 
         <div class="mb-3">
+            <label for="email" class="form-customer-label">Enviar mensaje de verificacion por: </label>
+            <InputSelect @bind-Value="registerRequest.PhoneRegister" class="form-select">
+              <option value="phone">Mensaje SMS</option>
+              <option value="email">Correo electronico</option>
+            </InputSelect>
+            <ValidationMessage For="@(() => registerRequest.Phone)" />
+        </div>
+
+        <div class="mb-3">
             <label for="email" class="form-customer-label">Correo Electronico</label>
             <InputText @bind-Value="registerRequest.Email" class="form-control" />
             <ValidationMessage For="@(() => registerRequest.Email)" />
@@ -85,6 +94,7 @@
     {
         try
         {
+            Console.WriteLine(registerRequest.PhoneRegister);
             loading = true;
             var response = await UserClientService.RegisterUser(registerRequest);
             var toast = Sweet.Mixin(new SweetAlertOptions

@@ -1,6 +1,6 @@
 ﻿@using GGR.Client.Areas.Users.Services.Contract;
 @using GGR.Shared.User;
-@layout LoginLayoutAdmin
+@layout CustomerLayout
 @attribute [Route(Routes.User.VerifyUser)]
 
 <h3 class="mb-5 mx-auto mt-4 text-center">Verficación de usuario</h3>
@@ -32,7 +32,7 @@ else
             <InputText @bind-Value="restoreTokenRequest.Password" type="password" class="form-control" />
         </div>
 
-        <button type="submit" class="btn btn-success">Iniciar Sesión</button>
+        <button type="submit" class="btn btn-success">Obtener nuevo token de verificacion</button>
     </EditForm>
 }
 
@@ -72,7 +72,7 @@ else
                     ShowCancelButton = false,
                     ConfirmButtonText = "Entendido"
                 });
-            NavigationManager.NavigateTo(Routes.User.LoginPage);
+            NavigationManager.NavigateTo(Routes.Customer.LoginCustomer);
 
         }
         catch ( Exception ex )

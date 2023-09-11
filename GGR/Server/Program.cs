@@ -6,6 +6,7 @@ using System.Text;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using dotenv.net;
+using Twilio;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +27,11 @@ builder.Services.AddDbContextFactory<GlobalDbContext>(options =>
 {
     options.UseNpgsql(connectionString);
 });
+
+var twilioSid = builder.Configuration.GetSection("Twilio").GetSection("Sid").Value;
+var twilioToken = builder.Configuration.GetSection("Twilio").GetSection("Auth").Value;
+
+TwilioClient.Init(twilioSid, twilioToken);
 
 // Configure Auth
 var key = builder.Configuration.GetSection("Jwt").GetSection("Key").Value;

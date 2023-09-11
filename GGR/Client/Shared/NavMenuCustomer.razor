@@ -7,41 +7,45 @@
 @inject SweetAlertService Sweet;
 
 <div class="navbar-container">
-    <nav class="navbar">
+    <nav class="navbar" style="min-height: 80px; height: auto;">
+        <div style="height: 60px;" class="logo-container">
+            <a href="https://grupogasolinerorivas.com.mx/"
+              style="padding: 4px 8px; background-color: #F8F7F7; height: 100%; display: block;"
+              class="rounded">
+              <img src="/logoGGR.svg" alt="Grupo Gasolinero Rivas" style="height: 100%">
+            </a>
 
-        <div>
-            <NavLink class="text-decoration-none text-white" href="@Routes.Customer.Index" Match="NavLinkMatch.All">
-                <span>GGR</span>
-            </NavLink>
+            <button @onclick="ToggleNavMenu" class="button-toggle">
+              <span class="oi oi-menu" style="background: transparent; border: none;" aria-hidden="true"></span>
+            </button>
         </div>
 
-        <div style="display: flex; gap: 50px; align-items: center;">
+        <div style="display: flex; gap: 50px; align-items: center;" class="responsive-navbar @NavMenuCssClass">
             <AuthorizeView Roles="Admin, Editor">
                 <Authorized>
-                    <NavLink class="text-decoration-none text-white navbar-link" href="@Routes.Dashboard" Match="NavLinkMatch.All">
+                    <NavLink class="text-decoration-none nav-item nav-link text-white navbar-link" href="@Routes.Dashboard" Match="NavLinkMatch.All">
                         Administración
                     </NavLink>
                 </Authorized>
             </AuthorizeView>
 
-
-            <NavLink class="text-decoration-none text-white navbar-link" href="@Routes.Customer.Index" Match="NavLinkMatch.All">
+            <NavLink class="text-decoration-none nav-item nav-link text-white navbar-link" href="@Routes.Customer.Index" Match="NavLinkMatch.All">
                 Inicio
             </NavLink>
             
-            <NavLink class="text-decoration-none text-white navbar-link" href="@Routes.Customer.Profile" Match="NavLinkMatch.All">
+            <NavLink class="text-decoration-none nav-item nav-link text-white navbar-link" href="@Routes.Customer.Profile" Match="NavLinkMatch.All">
                 Perfil
             </NavLink>
 
-            <NavLink class="text-decoration-none text-white navbar-link" href="@Routes.Customer.CustomerRewardList" Match="NavLinkMatch.All">
+            <NavLink class="text-decoration-none nav-item nav-link text-white navbar-link" href="@Routes.Customer.CustomerRewardList" Match="NavLinkMatch.All">
                 Catálogo
             </NavLink>
 
-            <NavLink class="text-decoration-none text-white navbar-link" href="@Routes.Customer.ClaimedRewards" Match="NavLinkMatch.All">
+            <NavLink class="text-decoration-none nav-item nav-link text-white navbar-link" href="@Routes.Customer.ClaimedRewards" Match="NavLinkMatch.All">
                 Mis premios
             </NavLink>
 
-            <button @onclick="Logout" class="rounded px-3 py-1 text-white text-decoration-none border-0" style="background: #333;" href="@Routes.Reward.RewardsList" Match="NavLinkMatch.All">
+            <button @onclick="Logout" class="rounded px-3 py-1 text-white text-decoration-none nav-item nav-link border-0" style="background: #333;" href="@Routes.Reward.RewardsList" Match="NavLinkMatch.All">
                 Cerrar sesión
             </button>
         </div>
@@ -49,6 +53,14 @@
 </div>
 
 @code {
+    private bool collapseNavMenu = false;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "d-none" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
     private async Task Logout()
     {
         var result = await Sweet.FireAsync(new SweetAlertOptions

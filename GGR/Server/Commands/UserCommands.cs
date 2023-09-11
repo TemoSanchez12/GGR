@@ -12,6 +12,9 @@ using System.Text;
 using GGR.Server.Errors;
 using GGR.Server.Utils;
 using GGR.Server.Infrastructure.Contracts;
+using Twilio;
+using Twilio.Rest.Api.V2010.Account;
+using Twilio.TwiML.Messaging;
 
 namespace GGR.Server.Commands;
 
@@ -114,14 +117,24 @@ public class UserCommands : IUserCommands
 
         try
         {
-            string? email = user.Rol == UserRole.Client ? user.Email : null;
-            var subject = "Verificación de cuenta GGR Gasolinera";
+            Console.WriteLine(request.PhoneRegister);
+            if (request.UserRol != "client" || request.PhoneRegister == "email") {
+              string? email = user.Rol == UserRole.Client ? user.Email : null;
+              var subject = "Verificación de cuenta GGR Gasolinera";
 
-            await _emailSender.SendEmailAsync(email, subject, EmailVerificationBuilder.BuildVerificationEmail(GetBaseUrl(), registration.VerificationToken));
+              await _emailSender.SendEmailAsync(email, subject, EmailVerificationBuilder.BuildVerificationEmail(GetBaseUrl(), registration.VerificationToken));
+            } else {
+              var message = await MessageResource.CreateAsync(
+                body: $"Para verificar su cuenta en GGR ingrese al siguiente enlace: https://{GetBaseUrl()}/verify-user/{registration.VerificationToken}",
+                from: new Twilio.Types.PhoneNumber("+17274784891"),
+                to: new Twilio.Types.PhoneNumber($"+52{request.Phone}")
+              );
+            }
+
         }
         catch ( Exception ex )
         {
-            _logger.LogError("Something went wrong while sending email verification: {ErrorMessage}", ex.Message);
+            _logger.LogError(ex, "Something went wrong while sending email verification: {ErrorMessage}", ex.Message);
             throw new Exception(UserError.ErrorSendingVerifycationEmail.ToString());
         }
 
@@ -162,6 +175,19 @@ public class UserCommands : IUserCommands
 
         userRegistration.VerificationToken = CreateRandomToken();
         userRegistration.ExpiryTime = DateTime.UtcNow.AddMinutes(60);
+
+         try
+        {
+            string? email = user.Rol == UserRole.Client ? user.Email : null;
+            var subject = "Verificación de cuenta GGR Gasolinera";
+
+            await _emailSender.SendEmailAsync(email, subject, EmailVerificationBuilder.BuildVerificationEmail(GetBaseUrl(), userRegistration.VerificationToken));
+        }
+        catch ( Exception ex )
+        {
+            _logger.LogError("Something went wrong while sending email verification: {ErrorMessage}", ex.Message);
+            throw new Exception(UserError.ErrorSendingVerifycationEmail.ToString());
+        }
 
         try
         {

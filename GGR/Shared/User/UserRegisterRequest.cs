@@ -15,6 +15,8 @@ public class UserRegisterRequest
     [MinLength(5, ErrorMessage = "Los apellidos tienen que tener minimo 5 caracteres")]
     public string LastName { get; set; } = string.Empty;
 
+    public string PhoneRegister { get; set; } = "email";
+
     [Required(ErrorMessage = "Por favor ingrese el correo electronico")]
     [RegularExpression("^[a-zA-Z0-9_\\.-]+@([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}$", ErrorMessage = "Debes indicar un email válido")]
     [MaxLength(100, ErrorMessage = "El correo electronico no puede tener más de 100 caracteres")]

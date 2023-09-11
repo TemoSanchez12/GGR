@@ -40,7 +40,16 @@ public class EmailSender : IEmailSender
             DeliveryMethod = SmtpDeliveryMethod.Network,
         };
 
-        return client.SendMailAsync(
-            new MailMessage(from: mail, to: email ?? emailOptions.PrincipalAdminEmail, subject, message));
+        var mailMessage = new MailMessage()
+        {
+          From = new MailAddress(mail),
+          Subject = subject,
+          Body = message,
+          IsBodyHtml = true
+        };
+
+        mailMessage.To.Add(email ?? emailOptions.PrincipalAdminEmail);
+
+        return client.SendMailAsync(mailMessage);
     }
 }
