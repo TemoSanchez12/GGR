@@ -46,7 +46,7 @@ public class FileRecordCommands : IFileRecordCommands
         }
 
 
-        var trustedFileNameForFileStorage = $"{DateTime.Now.ToString("dd-MM-yyyy")}.{file.ContentType.Split('/')[1]}";
+        var trustedFileNameForFileStorage = $"{Guid.NewGuid()}-{DateTime.Now.ToString("dd-MM-yyyy")}.{file.ContentType.Split('/')[1]}";
         var untrustedFileName = file.FileName;
         var trustedFileNameForDisplay = WebUtility.HtmlEncode(untrustedFileName);
         var path = Path.Combine(_env.ContentRootPath, "../FileRecords", trustedFileNameForFileStorage);
@@ -110,7 +110,7 @@ public class FileRecordCommands : IFileRecordCommands
             throw new Exception(FileRecordError.FileNotFound.ToString());
 
         var saleRecords = new List<SaleRecord>();
-
+        
         var readCsv = File.ReadAllText(fileRecord.key);
         var csvFileRecord = readCsv.Split("\n").ToList();
         csvFileRecord.RemoveAt(0);
@@ -120,14 +120,27 @@ public class FileRecordCommands : IFileRecordCommands
             if (!string.IsNullOrEmpty(row))
             {
                 var cells = row.Split(',');
-                _logger.LogInformation("Saving file record for ticket {Folio}", cells[0]);
+                foreach(var data in cells) {
+                  Console.WriteLine(data);
+                }
+             
+                _logger.LogInformation("Saving file record for ticket {Folio}", cells[1]);
+
+                Console.WriteLine(cells[2]);
+
+                Console.WriteLine(cells[1]);
+
+                Console.WriteLine(cells[0]);
 
                 var saleRecord = new SaleRecord
                 {
                     Id = Guid.NewGuid(),
-                    Amount = Decimal.Parse(cells[1]),
-                    Folio = cells[0]
+                    Amount = Math.Floor(Decimal.Parse(cells[3].Replace("\"", ""))),
+                    Folio = cells[2]
                 };
+
+                Console.WriteLine("Amount" + saleRecord.Amount);
+                Console.WriteLine("Folio" + saleRecord.Folio);
 
                 saleRecords.Add(saleRecord);
             }
@@ -180,13 +193,7 @@ public class FileRecordCommands : IFileRecordCommands
         if (request.DateForRecord > DateTime.UtcNow)
             throw new Exception(FileRecordError.FileDatePassToday.ToString());
 
-        if (dbContext.FileRecords.Any(f => f.FileName == request.DateForRecord.ToString("dd-MM-yyyy")))
-        {
-            _logger.LogWarning("File already uploaded today");
-            throw new Exception(FileRecordError.FileAlreadyUploadedForThatDate.ToString());
-        }
-
-        var trustedFileNameForFileStorage = $"{request.DateForRecord.ToString("dd-MM-yyyy")}.csv";
+        var trustedFileNameForFileStorage = $"{Guid.NewGuid()}-{request.DateForRecord.ToString("dd-MM-yyyy")}.csv";
         var untrustedFileName = request.DateForRecord.ToString("dd-MM-yyyy");
         var trustedFileNameForDisplay = WebUtility.HtmlEncode(untrustedFileName);
         var path = Path.Combine(_env.ContentRootPath, "../FileRecords", trustedFileNameForFileStorage);

@@ -47,7 +47,7 @@ public class SaleTicketCommands : ISaleTicketCommands
             .OrderByDescending(ticket => ticket.CreatedAt)
             .FirstOrDefaultAsync(t => t.User == user);
 
-        if ( latesTicket != null && latesTicket.CreatedAt.AddMinutes(30) > DateTime.Now )
+        if ( latesTicket != null && latesTicket.CreatedAt.AddMinutes(30) > DateTime.UtcNow )
             throw new Exception(SaleTicketsError.TimeSpanBetweenTicketRegisterNotReached.ToString());
 
 

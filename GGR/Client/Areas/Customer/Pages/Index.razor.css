@@ -1,0 +1,9 @@
+.index-container {
+  flex-direction: column;
+}
+
+@media (min-width: 700px) {
+  .index-container {
+    flex-direction: row;
+  }
+}

@@ -12,9 +12,7 @@ using System.Text;
 using GGR.Server.Errors;
 using GGR.Server.Utils;
 using GGR.Server.Infrastructure.Contracts;
-using Twilio;
 using Twilio.Rest.Api.V2010.Account;
-using Twilio.TwiML.Messaging;
 
 namespace GGR.Server.Commands;
 
@@ -117,8 +115,8 @@ public class UserCommands : IUserCommands
 
         try
         {
-            Console.WriteLine(request.PhoneRegister);
             if (request.UserRol != "client" || request.PhoneRegister == "email") {
+              Console.WriteLine("Entro");
               string? email = user.Rol == UserRole.Client ? user.Email : null;
               var subject = "Verificación de cuenta GGR Gasolinera";
 
