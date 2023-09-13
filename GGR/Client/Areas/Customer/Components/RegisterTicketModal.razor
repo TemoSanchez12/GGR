@@ -13,11 +13,32 @@
         <div style="width: 20px; height: 3px; background: #F47174; transform: rotate(-45deg); " class="rounded"></div>
     </div>
 
-    <EditForm Model="@registerRequest" OnValidSubmit="@HandleValidSubmit">
+
+    <EditForm Model="@registerRequest" OnValidSubmit="@HandleValidSubmit" style="max-width: 400px;">
+        <DataAnnotationsValidator/>
+        
+        <img src="/TICKET.png" alt="Muestra de ticket" style="width: 100%;">
+
         <div class="d-flex flex-column mt-3" style="">
             <label for="folio" class="form-customer-label mb-2">Registra el folio de tu ticket</label>
             <InputText @bind-Value="registerRequest.Folio" class="form-control" />
         </div>
+
+        <label for="folio" class="form-customer-label mt-2">Registra la hora de carga que se encuentra en el ticket</label>
+        <div style="display: flex; align-items: center; gap: 6px;">
+            <InputNumber @bind-Value="registerRequest.Hour" min="0" max="12" class="form-control" style="width: 74px" />
+            <span style="font-size: 30px; font-weight: 600;">:</span>
+            <InputNumber @bind-Value="registerRequest.Minutes" min="0" max="60" class="form-control" style="width: 74px" />
+            
+            <InputSelect class="form-select" style="width: 74px" @bind-Value="registerRequest.NoonOrMorning">
+              <option value="AM">AM</option>
+              <option value="PM">PM</option>
+            </InputSelect>
+        </div>
+
+        <ValidationMessage For="@(() => registerRequest.Hour)"/>
+        <ValidationMessage For="@(() => registerRequest.Minutes)"/>
+        <ValidationMessage For="@(() => registerRequest.NoonOrMorning)"/>
 
         <button type="submit" class="px-2 py-1 border-0 rounded text-white mt-3" style="background-color: #333; bottom: 30px; right: 30px;">
             Registrar ticket

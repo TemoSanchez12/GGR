@@ -36,4 +36,19 @@ public class UserRegisterRequest
 
     [Required]
     public string UserRol { get; set; } = string.Empty;
+
+    [MustBeTrue(ErrorMessage = "Tiene que aceptar los terminos y condiciones para poder continuar")]
+    public bool AcceptTerms { get; set; } = false;
+} 
+
+public class MustBeTrueAttribute : ValidationAttribute
+{
+    public override bool IsValid(object value)
+    {
+        if (value is bool boolValue)
+        {
+            return boolValue == true;
+        }
+        return false;
+    }
 }

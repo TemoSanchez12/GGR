@@ -60,6 +60,15 @@
             <ValidationMessage For="@(() => registerRequest.ConfirmPassword)" />
         </div>
 
+        <div class="form-customer-links">
+            <InputCheckbox class="form-check-input" @bind-Value="registerRequest.AcceptTerms"/>
+            <p>
+                Aceptar
+                <a href="@Routes.Customer.TermsAndConditions" target="_blank" style="color: dark-blue;">terminos y condiciones</a>
+            </p>
+        </div>
+        <ValidationMessage For="@(() => registerRequest.AcceptTerms)" />
+
         <button type="submit" class="form-customer-submit-button">Crear cuenta</button>
 
         @if ( loading )
@@ -70,6 +79,8 @@
         }
     </EditForm>
 
+    
+    
     <div class="form-customer-links">
         <a href="@Routes.Customer.LoginCustomer">¿Ya tienes cuenta? Inicia sesión</a>
     </div>

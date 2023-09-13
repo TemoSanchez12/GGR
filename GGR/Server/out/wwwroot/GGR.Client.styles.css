@@ -274,6 +274,26 @@
   text-decoration: none;
   font-size: 12px;
 }
+/* /Areas/Customer/Pages/TermsAndConditions.razor.rz.scp.css */
+.modal-form-container[b-9h10kygvni] {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #f8f7f7;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(90%, 600px);
+  border-radius: 10px;
+}
+
+.modal-form-welcome[b-9h10kygvni] {
+  color: #ad1917;
+  font-size: 22px;
+  font-weight: 600;
+}
 /* /Shared/CustomerLayout.razor.rz.scp.css */
 .page-customer[b-j4gan3u0z3] {
   font-family: 'Montserrat', sans-serif;
