@@ -168,6 +168,17 @@ namespace GGR.Server.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<decimal>("Liters")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("Product")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("StartDate")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
                     b.ToTable("SaleRecords");
@@ -186,6 +197,10 @@ namespace GGR.Server.Data.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Folio")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("HourAndMinutesRegister")
                         .IsRequired()
                         .HasColumnType("text");
 

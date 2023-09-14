@@ -15,4 +15,5 @@ public static class UserErrorMessage
     public static string NotUsersFoundByEmail = "No se han encontrado usuarios con el email proporcionado";
     public static string ErrorSendingVerifycationEmail = "Algo ha salido mal a la hora de enviar email de verificacion";
     public static string UserAlreadyVerified = "El usuario ya esta registrado.";
+    public static string PhoneAlreadyRegistered = "El numero telefonico ya ha sido registrado a otra cuenta";
 }

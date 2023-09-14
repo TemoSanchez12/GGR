@@ -11,6 +11,7 @@ public class SaleTicket
     public decimal Amount { get; set; }
     public int Points { get; set; }
     public decimal Liters { get; set; }
+    public string HourAndMinutesRegister { get; set; } = string.Empty;
     public SaleTicketStatus Status { get; set; } = SaleTicketStatus.Unchecked;
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 

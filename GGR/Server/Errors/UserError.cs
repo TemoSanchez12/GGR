@@ -14,5 +14,6 @@ public enum UserError
     NotUsersFoundByEmail,
     ErrorSendingVerifycationEmail,
     UserAlreadyVerified,
-    PasswordsDoesNotMatch
+    PasswordsDoesNotMatch,
+    PhoneAlreadyRegistered
 }

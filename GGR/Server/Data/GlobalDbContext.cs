@@ -77,6 +77,7 @@ public class GlobalDbContext : DbContext
             builder.Property(ticket => ticket.Points).IsRequired();
             builder.Property(ticket => ticket.Liters);
             builder.Property(ticket => ticket.Folio).IsRequired();
+            builder.Property(ticket => ticket.HourAndMinutesRegister).IsRequired();
         });
 
         modelBuilder.Entity<FileRecord>(builder =>
@@ -93,6 +94,9 @@ public class GlobalDbContext : DbContext
             builder.HasKey(record => record.Id);
             builder.Property(record => record.Folio).IsRequired();
             builder.Property(record => record.Amount).IsRequired();
+            builder.Property(record => record.Liters).IsRequired();
+            builder.Property(record => record.Product).IsRequired();
+            builder.Property(record => record.StartDate).IsRequired();
         });
     }
 }

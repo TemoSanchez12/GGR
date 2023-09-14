@@ -181,6 +181,7 @@ public class UserController : ControllerBase
                 UserError.UnspecifieRole => UserErrorMessage.UnspecifieRole,
                 UserError.SavingDataError => UserErrorMessage.SavingUserError,
                 UserError.ErrorSendingVerifycationEmail => UserErrorMessage.ErrorSendingVerifycationEmail,
+                UserError.PhoneAlreadyRegistered => UserErrorMessage.PhoneAlreadyRegistered,
                 _ => _genericErrorMessage
             };
 

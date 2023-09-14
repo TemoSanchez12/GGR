@@ -8,24 +8,26 @@
     "net7.0": []
   },
   "packageFolders": {
-    "/home/temosanchez/.nuget/packages/": {}
+    "C:\\Users\\temos\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/temosanchez/Repos/GGR/GGR/Shared/GGR.Shared.csproj",
+      "projectUniqueName": "D:\\Repos\\GGR\\GGR\\Shared\\GGR.Shared.csproj",
       "projectName": "GGR.Shared",
-      "projectPath": "/home/temosanchez/Repos/GGR/GGR/Shared/GGR.Shared.csproj",
-      "packagesPath": "/home/temosanchez/.nuget/packages/",
-      "outputPath": "/home/temosanchez/Repos/GGR/GGR/Shared/obj/",
+      "projectPath": "D:\\Repos\\GGR\\GGR\\Shared\\GGR.Shared.csproj",
+      "packagesPath": "C:\\Users\\temos\\.nuget\\packages\\",
+      "outputPath": "D:\\Repos\\GGR\\GGR\\Shared\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/home/temosanchez/.nuget/NuGet/NuGet.Config"
+        "C:\\Users\\temos\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
         "net7.0"
       ],
       "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -59,7 +61,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/7.0.400/RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.400\\RuntimeIdentifierGraph.json"
       }
     }
   }

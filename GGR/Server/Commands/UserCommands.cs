@@ -77,6 +77,9 @@ public class UserCommands : IUserCommands
         if ( dbContext.Users.Any(user => user.Email == request.Email) )
             throw new Exception(UserError.EmailAlreadyRegistered.ToString());
 
+        if ( dbContext.Users.Any(user => user.Phone == request.Phone) )
+            throw new Exception();
+
         CreatePasswordHash(
             request.Password,
             out byte[] passwordHash,
@@ -115,18 +118,21 @@ public class UserCommands : IUserCommands
 
         try
         {
-            if (request.UserRol != "client" || request.PhoneRegister == "email") {
-              Console.WriteLine("Entro");
-              string? email = user.Rol == UserRole.Client ? user.Email : null;
-              var subject = "Verificación de cuenta GGR Gasolinera";
+            if ( request.UserRol != "client" || request.PhoneRegister == "email" )
+            {
+                Console.WriteLine("Entro");
+                string? email = user.Rol == UserRole.Client ? user.Email : null;
+                var subject = "Verificación de cuenta GGR Gasolinera";
 
-              await _emailSender.SendEmailAsync(email, subject, EmailVerificationBuilder.BuildVerificationEmail(GetBaseUrl(), registration.VerificationToken));
-            } else {
-              var message = await MessageResource.CreateAsync(
-                body: $"Para verificar su cuenta en GGR ingrese al siguiente enlace: https://{GetBaseUrl()}/verify-user/{registration.VerificationToken}",
-                from: new Twilio.Types.PhoneNumber("+17274784891"),
-                to: new Twilio.Types.PhoneNumber($"+52{request.Phone}")
-              );
+                await _emailSender.SendEmailAsync(email, subject, EmailVerificationBuilder.BuildVerificationEmail(GetBaseUrl(), registration.VerificationToken));
+            }
+            else
+            {
+                var message = await MessageResource.CreateAsync(
+                  body: $"Para verificar su cuenta en GGR ingrese al siguiente enlace: https://{GetBaseUrl()}/verify-user/{registration.VerificationToken}",
+                  from: new Twilio.Types.PhoneNumber("+17274784891"),
+                  to: new Twilio.Types.PhoneNumber($"+52{request.Phone}")
+                );
             }
 
         }
@@ -174,7 +180,7 @@ public class UserCommands : IUserCommands
         userRegistration.VerificationToken = CreateRandomToken();
         userRegistration.ExpiryTime = DateTime.UtcNow.AddMinutes(60);
 
-         try
+        try
         {
             string? email = user.Rol == UserRole.Client ? user.Email : null;
             var subject = "Verificación de cuenta GGR Gasolinera";
