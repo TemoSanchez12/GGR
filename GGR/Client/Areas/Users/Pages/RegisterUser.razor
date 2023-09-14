@@ -55,6 +55,15 @@
         <ValidationMessage For="@(() => registerRequest.UserRol)" />
     </div>
 
+    <div class="form-customer-links">
+        <InputCheckbox class="form-check-input" @bind-Value="registerRequest.AcceptTerms" />
+        <p>
+            Aceptar
+            <a href="@Routes.Customer.TermsAndConditions" target="_blank" style="color: dark-blue;">terminos y condiciones</a>
+        </p>
+    </div>
+    <ValidationMessage For="@(() => registerRequest.AcceptTerms)" />
+
     <button type="submit" class="btn btn-success">Crear usuario</button>
     @if ( loading )
     {

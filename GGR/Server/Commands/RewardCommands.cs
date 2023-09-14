@@ -83,9 +83,17 @@ public class RewardCommands : IRewardCommands
             File = new FileDescription(path)
         };
 
-        var uploadResult = _cloudinary.Upload(uploadParams);
+        try
+        {
+            var uploadResult = _cloudinary.Upload(uploadParams);
+            reward.PhotoUrl = uploadResult.Url.AbsoluteUri;
 
-        reward.PhotoUrl = uploadResult.Url.AbsoluteUri;
+        } catch (Exception ex)
+        {
+            _logger.LogError("Something went wrong while saving reward {ErrorMessage}", ex.Message);
+            throw new Exception(RewardError.SavingDataError.ToString());
+        }
+
 
         try
         {
