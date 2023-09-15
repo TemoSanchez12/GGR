@@ -94,7 +94,7 @@ else
     private bool processingFile = false;
 
     private List<FileRecord> FileRecords { get; set; } = new List<FileRecord>();
-    private long maxFileSize = 1048576;
+    private long maxFileSize = 1024 * 1024 * 128;
     private UploadFileRecordRequest request { get; set; } = new UploadFileRecordRequest();
 
     private async Task OnInputFileChange(InputFileChangeEventArgs arg)
