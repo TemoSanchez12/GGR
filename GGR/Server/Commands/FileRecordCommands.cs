@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using GGR.Server.Data.Models;
 using GGR.Server.Infrastructure.Contracts;
 using GGR.Shared.FileRecord;
+using Twilio.TwiML.Voice;
 
 namespace GGR.Server.Commands;
 
@@ -158,10 +159,14 @@ public class FileRecordCommands : IFileRecordCommands
                 ticket.Folio, ticket.User.Id);
 
             var saleRecord = await dbContext.SaleRecords
-                .FirstOrDefaultAsync(record => record.Folio == ticket.Folio.Remove(0, 1) || record.Folio == ticket.Folio);
+                .FirstOrDefaultAsync(record => record.Folio == ticket.Folio.Remove(0, 1) || record.Folio == ticket.Folio || record.Folio.Contains(ticket.Folio));
+
+            Console.WriteLine("Comparing: " + ticket.Folio);
 
             if ( saleRecord == null )
                 continue;
+
+            Console.WriteLine("Comparing: " + ticket.Folio + saleRecord.Folio);
 
             if ( !saleRecord.StartDate.Contains(ticket.HourAndMinutesRegister) )
                 continue;
