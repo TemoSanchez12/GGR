@@ -143,6 +143,11 @@ public class FileRecordCommands : IFileRecordCommands
         await dbContext.SaleRecords.AddRangeAsync(saleRecords);
         await dbContext.SaveChangesAsync();
 
+        foreach ( var saleRecord in saleRecords )
+        {
+            Console.WriteLine(saleRecord.Folio);
+        }
+
         var saleTicketsToRemove = await dbContext.SaleTickets
             .Where(ticket => ticket.Status == Data.Models.Utils.SaleTicketStatus.Unchecked
             && ticket.CreatedAt.AddDays(3) < DateTime.UtcNow).ToListAsync();
@@ -162,11 +167,10 @@ public class FileRecordCommands : IFileRecordCommands
                 .FirstOrDefaultAsync(record => record.Folio == ticket.Folio.Remove(0, 1) || record.Folio == ticket.Folio || record.Folio.Contains(ticket.Folio));
 
             Console.WriteLine("Comparing: " + ticket.Folio);
-
             if ( saleRecord == null )
                 continue;
 
-            Console.WriteLine("Comparing: " + ticket.Folio + saleRecord.Folio);
+            Console.WriteLine("Comparing: " + ticket.Folio + " => " + saleRecord.Folio);
 
             if ( !saleRecord.StartDate.Contains(ticket.HourAndMinutesRegister) )
                 continue;
@@ -195,7 +199,7 @@ public class FileRecordCommands : IFileRecordCommands
         var trustedFileNameForFileStorage = $"{Guid.NewGuid()}-{request.DateForRecord.ToString("dd-MM-yyyy")}.csv";
         var untrustedFileName = request.DateForRecord.ToString("dd-MM-yyyy");
         var trustedFileNameForDisplay = WebUtility.HtmlEncode(untrustedFileName);
-        var path = Path.Combine(_env.ContentRootPath, "../FileRecords", trustedFileNameForFileStorage);
+        var path = Path.Combine(_env.ContentRootPath, "FileRecords", trustedFileNameForFileStorage);
 
         var recordId = Guid.NewGuid();
         var fileRecord = new FileRecord
@@ -247,7 +251,7 @@ public class FileRecordCommands : IFileRecordCommands
         return fileRecords;
     }
 
-    public async Task CheckTicketsFromFiles()
+    public async System.Threading.Tasks.Task CheckTicketsFromFiles()
     {
         _logger.LogInformation($"CheckTickets from files records in date  {DateTime.Now}");
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
