@@ -88,6 +88,7 @@ public class RewardClaimCommands : IRewardClaimCommands
             ClaimCreated = DateTime.UtcNow,
         };
 
+        reward.UnitsAvailable -= 1;
         user.Points -= reward.PricePoints;
 
         try

@@ -130,7 +130,7 @@ public class FileRecordCommands : IFileRecordCommands
                     Folio = cells[0],
                     Liters = Math.Floor(Decimal.Parse(cells[7])),
                     Product = cells[6],
-                    StartDate = cells[1]
+                    StartDate = cells[1] + cells[2]
                 };
 
                 saleRecords.Add(saleRecord);
