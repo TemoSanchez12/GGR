@@ -127,7 +127,7 @@ public class FileRecordCommands : IFileRecordCommands
                 {
                     Id = Guid.NewGuid(),
                     Amount = Math.Floor(Decimal.Parse(cells[8].Replace("\"", ""))),
-                    Folio = cells[0],
+                    Folio = cells[14],
                     Liters = Math.Floor(Decimal.Parse(cells[7])),
                     Product = cells[6],
                     StartDate = cells[1] + cells[2]
@@ -158,7 +158,7 @@ public class FileRecordCommands : IFileRecordCommands
                 ticket.Folio, ticket.User.Id);
 
             var saleRecord = await dbContext.SaleRecords
-                .FirstOrDefaultAsync(record => record.Folio == ticket.Folio.Remove(0, 1));
+                .FirstOrDefaultAsync(record => record.Folio == ticket.Folio.Remove(0, 1) || record.Folio == ticket.Folio);
 
             if ( saleRecord == null )
                 continue;
