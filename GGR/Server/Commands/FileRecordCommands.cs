@@ -127,11 +127,11 @@ public class FileRecordCommands : IFileRecordCommands
                 var saleRecord = new SaleRecord
                 {
                     Id = Guid.NewGuid(),
-                    Amount = Math.Floor(Decimal.Parse(cells[8].Replace("\"", ""))),
-                    Folio = cells[14],
-                    Liters = Math.Floor(Decimal.Parse(cells[7])),
-                    Product = cells[6],
-                    StartDate = cells[1] + cells[2]
+                    Amount = Math.Floor(Decimal.Parse(cells[9].Replace("\"", ""))),
+                    Folio = cells[1],
+                    Liters = Math.Floor(Decimal.Parse(cells[8])),
+                    Product = cells[7],
+                    StartDate = cells[2] + cells[3]
                 };
 
                 saleRecords.Add(saleRecord);
@@ -199,7 +199,7 @@ public class FileRecordCommands : IFileRecordCommands
         var trustedFileNameForFileStorage = $"{Guid.NewGuid()}-{request.DateForRecord.ToString("dd-MM-yyyy")}.csv";
         var untrustedFileName = request.DateForRecord.ToString("dd-MM-yyyy");
         var trustedFileNameForDisplay = WebUtility.HtmlEncode(untrustedFileName);
-        var path = Path.Combine(_env.ContentRootPath, "../FileRecords", trustedFileNameForFileStorage);
+        var path = Path.Combine(_env.ContentRootPath, "FileRecords", trustedFileNameForFileStorage);
 
         var recordId = Guid.NewGuid();
         var fileRecord = new FileRecord
@@ -264,5 +264,21 @@ public class FileRecordCommands : IFileRecordCommands
             _logger.LogInformation("Checking tickets from file {FileId} {FileName}", fileRecord.Id, fileRecord.FileName);
             await CheckTicketFromFile(fileRecord.Id);
         }
+    }
+
+    public async Task<FileRecord> DeleteFileRecord(DeleteFileRecordRequest request)
+    {
+        _logger.LogInformation("Deleting file record with id {FileRecordId}", request.FileRecordId);
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+
+        var fileRecord = await dbContext.FileRecords.FirstOrDefaultAsync(file => file.Id == request.FileRecordId);
+
+        if ( fileRecord == null )
+            throw new Exception(FileRecordError.FileNotFound.ToString());
+
+        dbContext.FileRecords.Remove(fileRecord);
+        dbContext.SaveChanges();
+
+        return fileRecord;
     }
 }

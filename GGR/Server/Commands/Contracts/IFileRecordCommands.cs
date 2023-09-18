@@ -13,4 +13,5 @@ public interface IFileRecordCommands
     Task CheckTicketsFromFiles();
     Task<List<FileRecord>> GetFileRecordsWithoutProcessing();
     Task<FileRecord> CheckTicketFromFile(Guid FileRecordId);
+    Task<FileRecord> DeleteFileRecord(DeleteFileRecordRequest request);
 }

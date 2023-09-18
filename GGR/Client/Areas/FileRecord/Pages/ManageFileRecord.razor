@@ -69,6 +69,9 @@
                         <button class="btn btn-primary" @onclick="@(async () => await ProcessFile(file.Id))">
                             Procesar
                         </button>
+                        <button class="btn btn-danger btn-sm" onclick="@(async() => await DeleteFile(file.Id))">
+                            <i class="oi oi-trash"></i>
+                        </button>
                     </td>
 
                 </tr>
@@ -111,6 +114,59 @@ else
     protected override async Task OnInitializedAsync()
     {
         await LoadFileRecords();
+    }
+
+    private async Task DeleteFile(Guid fileId)
+    {
+        var result = await Sweet.FireAsync(new SweetAlertOptions
+            {
+                Title = "¿Esta seguro de que desea elimiar el registro?",
+                Icon = SweetAlertIcon.Warning,
+                ShowCancelButton = true,
+                ConfirmButtonText = "Si, eliminar",
+                CancelButtonText = "No, conservar"
+            });
+
+        if ( result.IsConfirmed )
+        {
+            try
+            {
+                var request = new DeleteFileRecordRequest { FileRecordId = fileId };
+                var response = await FileRecordClientService.RemoveFileRecord(request);
+
+                if ( response.Success )
+                {
+                    await LoadFileRecords();
+                    StateHasChanged();
+                    await Sweet.FireAsync(new SweetAlertOptions
+                        {
+                            Title = "Eliminado",
+                            Icon = SweetAlertIcon.Success,
+                            Text = response.Message
+                        });
+
+                }
+                else
+                {
+                    await Sweet.FireAsync(new SweetAlertOptions
+                        {
+                            Title = "Algo salio mal",
+                            Icon = SweetAlertIcon.Error,
+                            Text = response.Message
+                        });
+                }
+
+            }
+            catch ( Exception ex )
+            {
+                await Sweet.FireAsync(new SweetAlertOptions
+                    {
+                        Title = "Error",
+                        Icon = SweetAlertIcon.Error,
+                        Text = "Error al eliminar el registro"
+                    });
+            }
+        }
     }
 
     private async Task LoadFileRecords()

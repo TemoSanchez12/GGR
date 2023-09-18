@@ -90,6 +90,36 @@ public class FileRecordClientService : IFileRecordClientService
 
     }
 
+    public async Task<ServiceResponse<DeleteFileRecordResponse>> RemoveFileRecord(DeleteFileRecordRequest request)
+    {
+        _logger.LogInformation("Removing file record with id {FileRecordId}", request.FileRecordId);
+        var token = await _localStorageService.GetItemAsync<string>("token");
+        var requestMessage = new HttpRequestMessage(HttpMethod.Post, "api/FileRecord/remove-file-record");
+        requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        requestMessage.Content = JsonContent.Create(request);
+
+        try
+        {
+            var response = await _httpClient.SendAsync(requestMessage);
+            var content = await response.Content.ReadFromJsonAsync<ServiceResponse<DeleteFileRecordResponse>>();
+
+            if ( content != null )
+            {
+                return content;
+            }
+            else
+            {
+                throw new Exception();
+            }
+        }
+        catch ( Exception ex )
+        {
+            _logger.LogError(ex, "Something went wrong while fetching user by id");
+            _navigationManager.NavigateTo(Routes.Customer.LoginCustomerSessionExpired);
+            return new ServiceResponse<DeleteFileRecordResponse>();
+        }
+    }
+
     public async Task<ServiceResponse<GetFileByDateResponse>> GetFileRecordByDate(DateTime date)
     {
         _logger.LogInformation($"Fetching file record with date: {date}");

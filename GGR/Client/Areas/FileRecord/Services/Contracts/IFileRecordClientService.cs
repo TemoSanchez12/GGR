@@ -11,4 +11,5 @@ public interface IFileRecordClientService
     Task<ServiceResponse<UploadFileResponse>> UploadFileRecord(UploadFileRecordRequest request);
     Task<ServiceResponse<GetFileRecordsResponse>> GetFileRecordsWithoutProcessing();
     Task<ServiceResponse<ProcessingFileRecordResponse>> ProcessFileRecord(ProcessingFileRecordRequest request);
+    Task<ServiceResponse<DeleteFileRecordResponse>> RemoveFileRecord(DeleteFileRecordRequest request);
 }

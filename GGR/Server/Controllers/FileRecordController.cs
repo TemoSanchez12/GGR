@@ -18,6 +18,8 @@ public class FileRecordController : ControllerBase
     private static readonly string _successFetchingFileWithoutProcessing = "Se han devulto los registros de archivo sin procesar";
     private static readonly string _successProcessingFileRecordMessage = "Se ha procesaso el archivo de registros correctamente";
     private static readonly string _errorProcessingFileRecordMessage = "Error al procesar el archivo de registro";
+    private static readonly string _successDeleteFileRecordMessage = "El archivo de registro se ha elimiado correctamente";
+    private static readonly string _errorDeleteFileRecordMessage = "Algo ha salido mal a la hora de elimiar el registro";
 
     private readonly ILogger<FileRecordController> _logger;
     private readonly IFileRecordCommands _fileRecordCommands;
@@ -63,6 +65,29 @@ public class FileRecordController : ControllerBase
                     response.Message = _errorUploadFileMessage;
                     return StatusCode(StatusCodes.Status500InternalServerError, response);
             }
+        }
+    }
+
+    [HttpPost("remove-file-record")]
+    [Authorize(Roles = "Admin, Editor")]
+    public async Task<ActionResult<ServiceResponse<DeleteFileRecordResponse>>> DeleteFileRecord(DeleteFileRecordRequest request)
+    {
+        var response = new ServiceResponse<DeleteFileRecordResponse>();
+
+        try
+        {
+            var fileRecord = await _fileRecordCommands.DeleteFileRecord(request);
+            response.Success = true;
+            response.Message = _successDeleteFileRecordMessage;
+            response.Data = new DeleteFileRecordResponse { FileRecord = fileRecord.ToDefinition() };
+            return Ok(response);
+        }
+        catch ( Exception ex )
+        {
+            _logger.LogError(ex, "Something went wrong while fetching file records without processing");
+            response.Success = false;
+            response.Message = _errorDeleteFileRecordMessage;
+            return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
 
