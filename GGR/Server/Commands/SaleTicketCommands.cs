@@ -50,7 +50,6 @@ public class SaleTicketCommands : ISaleTicketCommands
         if ( latesTicket != null && latesTicket.CreatedAt.AddMinutes(1) > DateTime.UtcNow )
             throw new Exception(SaleTicketsError.TimeSpanBetweenTicketRegisterNotReached.ToString());
 
-
         var saleTicketId = Guid.NewGuid();
         var saleTicket = new SaleTicket
         {
@@ -60,6 +59,21 @@ public class SaleTicketCommands : ISaleTicketCommands
             CreatedAt = DateTime.UtcNow,
             HourAndMinutesRegister = $"{request.Hour}:{request.Minutes}"
         };
+
+        var saleRecord = await dbContext.SaleRecords
+            .FirstOrDefaultAsync(record => record.Folio == saleTicket.Folio.Remove(0, 1) 
+            || record.Folio == saleTicket.Folio 
+            || record.Folio.Contains(saleTicket.Folio));
+
+        if ( saleRecord != null && saleRecord.StartDate.Contains(saleTicket.HourAndMinutesRegister) )
+        {
+            saleTicket.Points = (int) (saleRecord.Product.Contains("87") ? saleRecord.Liters * 10 : saleRecord.Liters * 15);
+            saleTicket.Amount = saleRecord.Amount;
+            saleTicket.Liters = saleRecord.Liters;
+            saleTicket.Status = Data.Models.Utils.SaleTicketStatus.Checked;
+
+            saleTicket.User.Points += saleTicket.Points;
+        }
 
         dbContext.SaleTickets.Add(saleTicket);
 

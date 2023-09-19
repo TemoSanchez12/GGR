@@ -183,7 +183,6 @@ public class FileRecordCommands : IFileRecordCommands
             ticket.User.Points += ticket.Points;
         }
 
-        dbContext.SaleRecords.RemoveRange(dbContext.SaleRecords);
         await dbContext.SaveChangesAsync();
         return fileRecord;
     }
