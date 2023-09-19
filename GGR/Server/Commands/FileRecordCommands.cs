@@ -7,6 +7,8 @@ using GGR.Server.Data.Models;
 using GGR.Server.Infrastructure.Contracts;
 using GGR.Shared.FileRecord;
 using Twilio.TwiML.Voice;
+using GGR.Client.Areas.SaleTickets.Models;
+using System.Runtime.Intrinsics.X86;
 
 namespace GGR.Server.Commands;
 
@@ -166,13 +168,13 @@ public class FileRecordCommands : IFileRecordCommands
             var saleRecord = await dbContext.SaleRecords
                 .FirstOrDefaultAsync(record => record.Folio == ticket.Folio.Remove(0, 1) || record.Folio == ticket.Folio || record.Folio.Contains(ticket.Folio));
 
-            Console.WriteLine("Comparing: " + ticket.Folio);
             if ( saleRecord == null )
                 continue;
 
-            Console.WriteLine("Comparing: " + ticket.Folio + " => " + saleRecord.Folio);
+            var aux = ticket.HourAndMinutesRegister.Reverse().ToArray()[0];
+            var formatedDate = ticket.HourAndMinutesRegister.Remove(ticket.HourAndMinutesRegister.Length - 1, 1) + $"0{aux}";
 
-            if ( !saleRecord.StartDate.Contains(ticket.HourAndMinutesRegister) )
+            if ( !(saleRecord.StartDate.Contains(ticket.HourAndMinutesRegister) || saleRecord.StartDate.Contains(formatedDate)))
                 continue;
 
             ticket.Points = (int) (saleRecord.Product.Contains("87") ? saleRecord.Liters * 10 : saleRecord.Liters * 15);
