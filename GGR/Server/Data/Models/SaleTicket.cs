@@ -26,6 +26,7 @@ public class SaleTicket
             Liters = Liters,
             UserId = User.Id,
             UserEmail = User.Email,
+            FolioDate = HourAndMinutesRegister
         };
     }
 }

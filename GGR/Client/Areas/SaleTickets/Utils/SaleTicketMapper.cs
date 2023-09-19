@@ -16,6 +16,7 @@ public static class SaleTicketMapper
             UserEmail = definition.UserEmail,
             UserId = definition.UserId,
             Folio = definition.Folio,
+            FolioDate = definition.FolioDate,
         };
     }
 }

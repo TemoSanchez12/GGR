@@ -9,4 +9,5 @@ public class SaleTicket
     public decimal Amount { get; set; }
     public int Points { get; set; }
     public decimal Liters { get; set; }
+    public string FolioDate { get; set; } = string.Empty;
 }
