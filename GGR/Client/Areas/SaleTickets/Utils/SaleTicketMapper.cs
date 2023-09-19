@@ -14,7 +14,8 @@ public static class SaleTicketMapper
             Liters = definition.Liters,
             Points = definition.Points,
             UserEmail = definition.UserEmail,
-            UserId = definition.UserId
+            UserId = definition.UserId,
+            Folio = definition.Folio,
         };
     }
 }
