@@ -171,12 +171,6 @@ public class FileRecordCommands : IFileRecordCommands
             if ( saleRecord == null )
                 continue;
 
-            var aux = ticket.HourAndMinutesRegister.Reverse().ToArray()[0];
-            var formatedDate = ticket.HourAndMinutesRegister.Remove(ticket.HourAndMinutesRegister.Length - 1, 1) + $"0{aux}";
-
-            if ( !(saleRecord.StartDate.Contains(ticket.HourAndMinutesRegister) || saleRecord.StartDate.Contains(formatedDate)) )
-                continue;
-
             ticket.Points = (int) (saleRecord.Product.Contains("87") ? saleRecord.Liters * 10 : saleRecord.Liters * 15);
             ticket.Amount = saleRecord.Amount;
             ticket.Liters = saleRecord.Liters;

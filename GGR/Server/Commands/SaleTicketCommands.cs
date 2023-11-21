@@ -61,15 +61,13 @@ public class SaleTicketCommands : ISaleTicketCommands
         };
 
         var saleRecord = await dbContext.SaleRecords
-            .FirstOrDefaultAsync(record => record.Folio == saleTicket.Folio.Remove(0, 1) 
-            || record.Folio == saleTicket.Folio 
+            .FirstOrDefaultAsync(record => record.Folio == saleTicket.Folio.Remove(0, 1)
+            || record.Folio == saleTicket.Folio
             || record.Folio.Contains(saleTicket.Folio));
 
         var aux = saleTicket.HourAndMinutesRegister.Reverse().ToArray()[0];
-        
-        if ( saleRecord != null && (saleRecord.StartDate.Contains(saleTicket.HourAndMinutesRegister) 
-            || saleRecord.StartDate.Contains(saleTicket.HourAndMinutesRegister
-            .Remove(saleTicket.HourAndMinutesRegister.Length - 1, 1) + $"0{aux}") ))
+
+        if ( saleRecord != null )
         {
             saleTicket.Points = (int) (saleRecord.Product.Contains("87") ? saleRecord.Liters * 10 : saleRecord.Liters * 15);
             saleTicket.Amount = saleRecord.Amount;
