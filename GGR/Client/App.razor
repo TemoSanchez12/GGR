@@ -9,11 +9,13 @@
                     @{
                         if ( !context.User.Identity!.IsAuthenticated || !context.User.HasClaim("userType", "Client") )
                         {
-                            NavigationManager.NavigateTo(Routes.Customer.LoginCustomer);
+                            NavigationManager.NavigateTo(Routes.Customer.RegisterTicketNotAvailable);
+                            // NavigationManager.NavigateTo(Routes.Customer.LoginCustomer);
                         }
                         else
                         {
-                            NavigationManager.NavigateTo(Routes.Dashboard);
+                            NavigationManager.NavigateTo(Routes.Customer.RegisterTicketNotAvailable);
+                            // NavigationManager.NavigateTo(Routes.Dashboard);
                         }
                     }
                 </NotAuthorized>
